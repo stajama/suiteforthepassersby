@@ -81,12 +81,26 @@ WSGI_APPLICATION = 'suiteforthepassersby.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+if 'DATABASE_URL' in os.environ:
+    import dj_database_url
+    DATABASES = {
+        'default': {
+            "ENGINE": "django.db.backends.postgresql",
+            'NAME': 'd5sb0epmo2j6hs',
+            'USER': 'ioxgvycapcsqwf',
+            'PASSWORD': os.environ.get('DATABASE_PASS'),
+            'HOST': 'ec2-107-21-233-72.compute-1.amazonaws.com',
+            'PORT': '5432',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
+
 
 
 # Password validation
