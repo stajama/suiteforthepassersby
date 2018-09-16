@@ -1,12 +1,12 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.template import loader
 
 from . import models
 
 # Create your views here.
 def mainView(request):
-    return HttpResponse(loader.get_template('home/test.html').render(None, request))
+    return HttpResponse(loader.get_template('home/testLogging.html').render(None, request))
 
 def getID(request):
     print("pre: " + str(models.Tester.objects.all()))
@@ -14,7 +14,7 @@ def getID(request):
     tester.save()
     print("post: " + str(models.Tester.objects.all()))
     id_number = tester.id
-    return(HttpResponse(id_number))
+    return(JsonResponse({'id':id_number}))
 
 def log(request, id, geoX, geoY, action):
     geoX = float(geoX)
@@ -22,4 +22,4 @@ def log(request, id, geoX, geoY, action):
     addDataPoint = models.ActionLog(test_id=id, geoX=geoX, geoY=geoY, action=action)
     addDataPoint.save()
     print(str(addDataPoint))
-    return(HttpResponse(1))
+    return(JsonResponse({'exit_code': 1}))

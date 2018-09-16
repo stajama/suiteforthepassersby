@@ -1,0 +1,544 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js">
+</head>
+<body>
+
+<h1 id="nextTo">You are not near any sculptures.</h1>
+
+<p id="startLat">x</p>
+<p id="startLon">y</p>
+<p id="distance1">1</p>
+<p id="distance2">2</p>
+<p id="distance3">3</p>
+<p id="distance4">4</p>
+<p id="distance5">5</p>
+<p id="distance6">6</p>
+<p id="distance7">7</p>
+<p id="distance8">8</p>
+<p id="distance9">9</p>
+<p id="distance10">10</p>
+<p id="distance11">11</p>
+<p id="distance12">12</p>
+<p id="distance13">13</p>
+<p id="distance14">14</p>
+
+
+<br>
+<button id="start">PRESS HERE TO START</button>
+<button id="stop">EMERGENCY STOP</button>
+<br>
+
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.js"></script>
+<script type="text/javascript">
+        /* Script uses HTML5 Geolocation to get regular GPS location updates 
+        from end-user devices. When initialized, piece1 (The Promenade) will
+        play until the user's geolocation is within the specified trigger 
+        distance of the desired piece. The function geosuccess contains logic
+        to transition to the desired piece.
+        */
+
+        // For Logging Event, assign logging ID
+        var LOGGING_ID
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', "http://127.0.0.1:8000/logging", true)
+        xhr.send();
+        xhr.onreadystatechange = processRequest;
+        function processRequest(e) {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                var response = JSON.parse(xhr.responseText);
+                LOGGING_ID = response.id;
+                console.log('id set: ' + LOGGING_ID);
+            }
+
+        }
+        // Close
+
+        const MAX_VOLUME = 1.0;
+        const MIN_VOLUME = 0.0;
+        const TRANSITION_TIME = 6; // This variable controls the crossfade time when a piece transition is triggered.
+        var transitioning = false;
+        var currentlyPlaying = 0;
+        
+        /* TODO (1) Not convinced this is a good idea. Christina came across a
+        spot in the garden that may be a common GPS dead-spot. Her request is
+        to implement a rolling average system; something that will throw away
+        junk data (such as GPS coords that vary too far from the last location
+        to be humanly feasible). While this is a good idea and will ensure a 
+        more robust and dependable app, I worry about adding too much 
+        additional calculation/strain, considering the wide range of phones
+        that may be using the app. If required, a system to [record the 
+        last good position data, compare it to the current position, decide
+        if the distance between the two is outside of the realm of feasible, 
+        and somehow split the difference to decide a new last know position] 
+        is required.
+        */  
+        // var last_position = {'lat': null, 'lon': null};
+        // const MAX_DIFF = 3; // Will through out results over this distance (eliminate eradicate data).
+
+        /* These variables are all Howler objects of the desired tracks of 
+        music for the entire piece. piece1 should be The Promenade to achieve 
+        the desired effect.
+        */
+
+        var piece1 = new Howl({
+            src: ["{% static "Promenade.mp3" %}"],
+            html5: true
+        });
+        piece1.loop(true);
+        var piece2 = new Howl({
+            src: ["{% static "Love_is_a_Madman.mp3" %}"],
+            html5: true
+        });
+        piece2.loop(true);
+        var piece3 = new Howl({
+            src: ["{% static "Broken.mp3" %}"],
+            html5: true
+        });
+        piece3.loop(true);
+        var piece4 = new Howl({
+            src: ["{% static "Oda_a_la_Vanguardia.mp3" %}"],
+            html5: true
+        });
+        piece4.loop(true);
+        var piece5 = new Howl({
+            src: ["{% static "Lightning_Bugs_in_the_Garden.mp3" %}"],
+            html5: true
+        });
+        piece5.loop(true);
+        var piece6 = new Howl({
+            src: ["{% static "Voice_Transition.mp3" %}"],
+            html5: true
+        });
+        piece6.loop(true);
+        var piece7 = new Howl({
+            src: ["{% static "Big_Muddy.mp3" %}"],
+            html5: true
+        });
+        piece7.loop(true);
+        var piece8 = new Howl({
+            src: ["{% static "To_Cast_Four_Motives.mp3" %}"],
+            html5: true
+        });
+        piece8.loop(true);
+        var piece9 = new Howl({
+            src: ["{% static "Headless_Figures.mp3" %}"],
+            html5: true
+        });
+        piece9.loop(true);
+
+        /* DEPRECATED: Use sculpture array - sculpture[index]["audio"]*/
+        // var allMusic = [piece1, piece2, piece3, piece4, piece5, piece6, piece7, piece8, piece9];
+
+        /* These key-value pair collections represent the necessary meta data
+        for each track/piece to be used.
+        "name": the name of the related sculpture or environment for the piece
+        "lat": the latitude of the central point of the related sculpture or 
+        environment
+        "lon": the longitude of the central point of the related sculpture or 
+        environment
+        "audio": the desired Howler audio object to be played within the
+        trigger radius of the sculpture or environment
+        "title": the title of the related piece of music/track for the related
+        sculpture or environment.
+        "trigger": the distance from the lat/lon the user must be for the desired
+        piece/track to begin to play.
+        "starttime": records the last top time for the piece so that it may be
+        restarted at that time if the user re-enters it's radius.
+
+        NOTE - shuttleTransition is a special-use-case. The desired functionality
+        is that if a user is located within the trigger radii of both the Northern
+        and Southern Shuttlecocks, a special transitional piece is played. "name",
+        title, startTime and audio are all that are required of this dictionary.
+        */
+
+        var standingFigures = {"name": "Standing Figures",
+                               "lat": 39.045812, 
+                               "lon": -94.581534, 
+                               "audio": piece9, 
+                               "title": "Headless Figures", 
+                               "trigger": 38.1, "startTime": 0};
+
+        var rumi = {"name": "Rumi", 
+                    "lat": 39.045879, 
+                    "lon": -94.580090, 
+                    "title": "Love is a Madman", 
+                    "trigger": 45.72, 
+                    "startTime": 0, 
+                    "audio": piece2};
+
+        var ferment = {"name": "Ferment", 
+                       "lat": 39.042758, 
+                       "lon": -94.579753, 
+                       "title": "Broken", 
+                       "trigger": 57.912, 
+                       "startTime": 0, 
+                       "audio": piece3};
+
+        var shuttlecockN = {"name": "North ShuttleCock", 
+                            "lat": 39.043357, 
+                            "lon": -94.581032, 
+                            "title": "Oda a La Vanguardia", 
+                            "trigger": 44.196, 
+                            "startTime": 0, 
+                            "audio": piece4};
+
+        var shuttlecockS = {"name": "South ShuttleCock", 
+                            "lat": 39.042691, 
+                            "lon": -94.581066, 
+                            "title": "Fireflies in the Garden", 
+                            "trigger": 44.196, 
+                            "startTime": 0, 
+                            "audio": piece5};
+
+        var shuttleTransition = {"name": "Transition", 
+                                  "title": "Both light and shadow", 
+                                  "startTime": 0, 
+                                  "audio": piece6,
+                                  "lat": 0,
+                                  "lon": 0};
+
+        var promenade = {"name": "Promenade", 
+                                  "title": "Promenade", 
+                                  "startTime": 0, 
+                                  "audio": piece1,
+                                  "lat": 0,
+                                  "lon": 0}; 
+         
+        var rooftop = {"name": "Bloch Rooftop",
+                        "title": "Big Muddy",
+                        "startTime": 0,
+                        "audio": piece7,
+                        "lat": 39.043987,
+                        "lon": -94.579814,
+                        "trigger": 28.956};
+                        
+        var turboFerryman = {"name": "'Turbo' or 'Ferryman'",
+                        "title": "Big Muddy",
+                        "startTime": 0,
+                        "audio": piece7,
+                        "lat": 39.043743,
+                        "lon": -94.579809,
+                        "trigger": 30.48};
+
+        var fourMotives1 = {"name": "Henry Moore Sculptures1",
+                        "title": "To Cast: Four Motives",
+                        "startTime": 0,
+                        "audio": piece8,
+                        "lat": 39.042582, 
+                        "lon": -94.581893, 
+                        "trigger": 30.48};
+
+        var fourMotives2 = {"name": "Henry Moore Sculptures2",
+                        "title": "To Cast: Four Motives",
+                        "startTime": 0,
+                        "audio": piece8,
+                        "lat": 39.042880,
+                        "lon": -94.581829,
+                        "trigger": 28.956};
+
+
+        var fourMotives3 = {"name": "Henry Moore Sculptures3",
+                        "title": "To Cast: Four Motives",
+                        "startTime": 0,
+                        "audio": piece8,
+                        "lat": 39.043271, 
+                        "lon": -94.581797,
+                        "trigger": 28.956};
+
+
+        var fourMotives4 = {"name": "Henry Moore Sculptures4",
+                        "title": "To Cast: Four Motives",
+                        "startTime": 0,
+                        "audio": piece8,
+                        "lat": 39.043560,
+                        "lon": -94.581807,
+                        "trigger": 28.956};
+
+        var fourMotives5 = {"name": "Henry Moore Sculptures5",
+                        "title": "To Cast: Four Motives",
+                        "startTime": 0,
+                        "audio": piece8,
+                        "lat": 39.043824, 
+                        "lon": -94.581822,
+                        "trigger": 27.432};
+
+        var sculptures = [turboFerryman, rooftop, fourMotives1, fourMotives2, fourMotives3, fourMotives4, fourMotives5, standingFigures,
+                                  rumi, ferment, shuttlecockS, shuttlecockN, shuttleTransition, promenade];
+
+
+
+        // check for Geolocation support
+        console.log('1')
+        if (navigator.geolocation) {
+            console.log('Geolocation is supported!');
+        }
+        else {
+            console.log('Geolocation is not supported for this Browser/OS.');
+            // It may be useful to the end-user to redirect them to a page stating
+            // that Geolocation is required for the full experience. This is also
+            // a suitable place to offer the option to go to a page with just
+            // buttons that trigger each piece/track with information about when
+            // to do so.
+        }
+        console.log('2')
+
+        /* Main FUnction. Must either start window.onload (should be 
+        possible thanks to Howler override of DOM exceptions) or through 
+        a button.onclick or similar user-initiated event.
+        */
+        
+        document.getElementById('start').onclick = async function() {
+            var startPos;
+            currentlyPlaying = piece1.play();
+
+            var geoOptions = {
+                enableHighAccuracy: true
+            };
+            console.log('3');
+
+            var geoSuccess = async function(position) {
+                startPos = position;
+                // var action: Logging event: for logging the exact situation each time geoSuccess runs
+                var action;
+
+                /* These element updates are largely only for testing.
+                 If they are not used for the end UI, they should be 
+                 deleted or commented out.*/
+                document.getElementById('startLat').innerHTML = startPos.coords.latitude;
+                document.getElementById('startLon').innerHTML = startPos.coords.longitude;
+
+                var x = calculateDistance(startPos.coords, standingFigures["lat"], standingFigures["lon"]);
+                if (x < standingFigures['trigger']) { document.getElementById('distance1').style.color = 'red'; } else { document.getElementById('distance1').style.color = 'black'; };
+                document.getElementById('distance1').innerHTML = "Distance from Standing Figures: " + x;
+
+                x = calculateDistance(startPos.coords, rumi["lat"], rumi["lon"]);
+                if (x < rumi['trigger']) { document.getElementById('distance2').style.color = 'red'; } else { document.getElementById('distance2').style.color = 'black'; };
+                document.getElementById('distance2').innerHTML = "Distance from Rumi: " + x;
+
+                x = calculateDistance(startPos.coords, ferment["lat"], ferment["lon"]);
+                if (x < ferment['trigger']) { document.getElementById('distance3').style.color = 'red'; } else { document.getElementById('distance3').style.color = 'black'; };
+                document.getElementById('distance3').innerHTML = "Distance from Ferment: " + x;
+
+                x = calculateDistance(startPos.coords, shuttlecockN["lat"], shuttlecockN["lon"]);
+                if (x < shuttlecockN['trigger']) { document.getElementById('distance4').style.color = 'red'; } else { document.getElementById('distance4').style.color = 'black'; };
+                document.getElementById('distance4').innerHTML = "Distance from Northern ShuttleCock: " + x;
+
+                x = calculateDistance(startPos.coords, shuttlecockS["lat"], shuttlecockS["lon"]);
+                if (x < shuttlecockS['trigger']) { document.getElementById('distance5').style.color = 'red'; } else { document.getElementById('distance5').style.color = 'black'; };
+                document.getElementById('distance5').innerHTML = "Distance from Southern ShuttleCock: " + x;
+
+                x = calculateDistance(startPos.coords, rooftop["lat"], rooftop["lon"]);
+                if (x < rooftop['trigger']) { document.getElementById('distance6').style.color = 'red'; } else { document.getElementById('distance6').style.color = 'black'; };
+                document.getElementById('distance6').innerHTML = "Distance from Bloch Rooftop: " + x;
+
+                x = calculateDistance(startPos.coords, turboFerryman["lat"], turboFerryman["lon"]);
+                if (x < turboFerryman['trigger']) { document.getElementById('distance7').style.color = 'red'; } else { document.getElementById('distance7').style.color = 'black'; };
+                document.getElementById('distance7').innerHTML = "Distance from Turbo or Ferryman: " + x;
+
+                x = calculateDistance(startPos.coords, fourMotives1["lat"], fourMotives1["lon"]);
+                if (x < fourMotives1['trigger']) { document.getElementById('distance8').style.color = 'red'; } else { document.getElementById('distance8').style.color = 'black'; };
+                document.getElementById('distance8').innerHTML = "Distance from Henry Moore Sculptures1: " + x;
+
+                x = calculateDistance(startPos.coords, fourMotives2["lat"], fourMotives2["lon"]);
+                if (x < fourMotives2['trigger']) { document.getElementById('distance9').style.color = 'red'; } else { document.getElementById('distance9').style.color = 'black'; };
+                document.getElementById('distance9').innerHTML = "Distance from Henry Moore Sculptures2: " + x;
+
+                x = calculateDistance(startPos.coords, fourMotives3["lat"], fourMotives3["lon"]);
+                if (x < fourMotives3['trigger']) { document.getElementById('distance10').style.color = 'red'; } else { document.getElementById('distance10').style.color = 'black'; };
+                document.getElementById('distance10').innerHTML = "Distance from Henry Moore Sculptures3: " + x;
+
+                x = calculateDistance(startPos.coords, fourMotives4["lat"], fourMotives4["lon"]);
+                if (x < fourMotives4['trigger']) { document.getElementById('distance11').style.color = 'red'; } else { document.getElementById('distance11').style.color = 'black'; };
+                document.getElementById('distance11').innerHTML = "Distance from Henry Moore Sculptures4: " + x;
+
+                x = calculateDistance(startPos.coords, fourMotives5["lat"], fourMotives5["lon"]);
+                if (x < fourMotives5['trigger']) { document.getElementById('distance12').style.color = 'red'; } else { document.getElementById('distance12').style.color = 'black'; };
+                document.getElementById('distance12').innerHTML = "Distance from Henry Moore Sculptures5: " + x;
+
+
+                // IMPORTANT !!!!!! IMPORTANT 
+                /* Any additional tracks/pieces must have their 
+                respective dictionary added to this array. This 
+                excludes The Promenade and the Shuttlecock Transition music.
+                */
+                
+
+
+                if (!transitioning) {
+                    var changed = false;
+                    // if in range of both Shuttlecocks: play transition music
+                    if (calculateDistance(startPos.coords, shuttlecockN["lat"], shuttlecockN["lon"]) <= shuttlecockN["trigger"] && 
+                        calculateDistance(startPos.coords, shuttlecockS["lat"], shuttlecockS["lon"]) <= shuttlecockS["trigger"]) {
+                        document.getElementById('nextTo').innerHTML = "You are in the transition area between the ShuttleCocks";
+                        if (!shuttleTransition["audio"].playing() ) {
+                            for (var j = 0; j < sculptures.length; j++) {
+                                if (sculptures[j]["audio"].playing()) {
+                                    transitioning = true;
+                                    console.log("starting " + shuttleTransition["title"] + " at " + shuttleTransition["startTime"]);
+                                    shuttleTransition["audio"].play();
+                                    shuttleTransition["audio"].seek(shuttleTransition["startTime"]);
+                                    shuttleTransition["audio"].fade(MIN_VOLUME, MAX_VOLUME, 1000 * TRANSITION_TIME);
+                                    sculptures[j]["audio"].fade(MAX_VOLUME, MIN_VOLUME, 1000 * TRANSITION_TIME);
+                                    await sleep(1000 * TRANSITION_TIME);
+                                    console.log("stopping " + sculptures[j]["title"] + " at " + sculptures[j]["audio"].seek());
+                                    sculptures[j]["startTime"] = sculptures[j]["audio"].seek();
+                                    sculptures[j]["audio"].pause();
+                                    transitioning = false;
+                                    changed = true;
+                                    action = "transitioning from " + sculptures[j]["title"] + " to shuttle transition music";
+                                    return;
+                                }
+                            }
+                        } else { changed = true; action = "already playing shuttle transition music";}
+                    }
+
+                    console.log("transition tested");
+                    /* if NOT changing to transition music, iterate through each 
+                    sculpture. If the user is in range of a new sculpture, change 
+                    to that respective piece/track.
+                    */
+                    if (!changed) {
+                        for (var i = 0; i < sculptures.length; i++) {
+                            if (sculptures[i]["lat"] == 0 && sculptures[i]["lon"] == 0)  {
+                                continue;
+                            };
+                            if (calculateDistance(startPos.coords, sculptures[i]["lat"], sculptures[i]["lon"]) <= sculptures[i]["trigger"]) {
+                                document.getElementById('nextTo').innerHTML = "You are near " + sculptures[i]["name"] + ", now playing: " + sculptures[i]["title"] + ".";
+                                if (!sculptures[i]["audio"].playing()) {
+                                    for (var j = 0; j < sculptures.length; j++) {
+                                        if (sculptures[j]["audio"].playing()) {
+                                            transitioning = true;
+                                            console.log("starting " + sculptures[i]["title"] + " at " + sculptures[i]["startTime"]);
+                                            sculptures[i]["audio"].play();
+                                            sculptures[i]["audio"].seek(sculptures[i]["startTime"]);
+                                            sculptures[i]["audio"].fade(MIN_VOLUME, MAX_VOLUME, 1000 * TRANSITION_TIME);
+                                            sculptures[j]["audio"].fade(MAX_VOLUME, MIN_VOLUME, 1000 * TRANSITION_TIME);
+                                            await sleep(1000 * TRANSITION_TIME);
+                                            console.log("stopping " + sculptures[j]["title"] + " at " + sculptures[j]["audio"].seek());
+                                            sculptures[j]["startTime"] = sculptures[j]["audio"].seek();
+                                            sculptures[j]["audio"].pause();
+                                            transitioning = false;
+                                            action = "transitioning from " + sculptures[j]["title"] + " to " + sculptures[i]["title"];
+                                            return;
+                                        }
+                                    }
+                                } else {
+                                    action = "already playing " + sculptures[i]['title'];
+                                    changed = true;
+                                }
+                            }
+                        }
+                    }
+                    console.log("allMusic tested");
+
+                    /* if NOT changing to transition music AND NOT changing 
+                    to another piece, play The Promenade music.
+                    */
+                    if (!changed) {
+                        document.getElementById('nextTo').innerHTML = "You are not near any sculptures."
+                        if (!promenade["audio"].playing()) {
+                            for (var j = 0; j < sculptures.length; j++) {
+                                if (sculptures[j]["audio"].playing()) {
+                                    transitioning = true;
+                                    console.log("starting " + promenade["title"] + " at " + promenade["startTime"]);
+                                    promenade["audio"].play();
+                                    promenade["audio"].seek(promenade["startTime"]);
+                                    promenade["audio"].fade(MIN_VOLUME, MAX_VOLUME, 1000 * TRANSITION_TIME);
+                                    sculptures[j]["audio"].fade(MAX_VOLUME, MIN_VOLUME, 1000 * TRANSITION_TIME);
+                                    await sleep(1000 * TRANSITION_TIME);
+                                    console.log("stopping " + sculptures[j]["title"] + " at " + sculptures[j]["audio"].seek());
+                                    sculptures[j]["startTime"] = sculptures[j]["audio"].seek();
+                                    sculptures[j]["audio"].pause();
+                                    transitioning = false;
+                                    action = "transitioning from " + sculptures[j]["title"] + " to promenade"
+                                    return;
+                                }
+                            }
+                        } else {
+                            action = "promenade_already_playing"
+                        }
+                    };
+                console.log("nothing tested");
+
+                } else {
+                    action = 'transitioning'
+                    console.log("transition being blocked");
+                };
+
+                // Logging event: send log data to server (id/geoLat/geoLong/action)
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', "http:127.0.0.1:8000/logging/" + LOGGING_ID + '/' + startPos.coords.latitude + '/' + startPos.coords.longitude + '/' + cleanActionStrings(action), true);
+                xhr.send();
+            };
+
+            var geoError = function(error) {
+                console.log('Error occurred. Error code: ' + error.code);
+                // error.code can be:
+                //   0: unknown error
+                //   1: permission denied
+                //   2: position unavailable (error response from location provider)
+                //   3: timed out
+            };
+
+            /* Function starts with this call. watchPosition() regularly updates, calling
+            geoSuccess if user Geolocation data is successfully received, causing a constant
+            loop of the main functionality of the app.
+            */
+            navigator.geolocation.watchPosition(geoSuccess, geoError, geoOptions);
+        };
+        console.log('time to worry if otherwise blank');
+
+        /* Function for calculating users-position from a sculpture. 
+        Math and code explained better at 
+        https://www.movable-type.co.uk/scripts/latlong.html
+        */
+        function calculateDistance(currentPosition, targetPositionLat, targetPositionLon) {
+            const R = 6371e3; // earth's radius (const)
+            var phi1 = currentPosition.latitude * (Math.PI / 180);
+            var phi2 = targetPositionLat * (Math.PI / 180);
+            var deltaphi = (targetPositionLat - currentPosition.latitude) * (Math.PI / 180);
+            var deltalambda = (targetPositionLon - currentPosition.longitude) * (Math.PI / 180);
+
+            var a = Math.sin(deltaphi / 2) * Math.sin(deltaphi / 2) +
+                    Math.cos(phi1) * Math.cos(phi2) *
+                    Math.sin(deltalambda / 2) * Math.sin(deltalambda / 2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            var d = R * c;
+            return d;
+        };
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // IMPORTANT !!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!
+        /* This function is tied to the Emergency Stop button. It simply stops 
+        all Howler objects from playing in the off chance that something goes 
+        horribly wrong. Any new Howler objects must be added to the this 
+        function.
+        */
+        document.getElementById('stop').onclick = function() {
+            for (i = 0; i < sculptures.length; i++) {
+                sculptures[i]["audio"].pause();
+            }
+        };
+
+        function cleanActionStrings(actionString) {
+            var output = "";
+            for (i = 0; i < actionString.length; i++) {
+                if (actionString.charAt(i) == ' ') {
+                    output = output + "_";
+                } else {
+                    output = output + actionString.charAt(i);
+                }
+            }
+            return output;
+        }
+        
+    </script>
+
+</html>

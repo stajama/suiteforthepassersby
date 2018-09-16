@@ -8,5 +8,5 @@ class ActionLog(models.Model):
     test_id = models.IntegerField(default=666)
     geoX = models.FloatField('Geocode Latitude')
     geoY = models.FloatField('Geocode Longitude')
-    action = models.SlugField(max_length=50)
+    action = models.SlugField(max_length=200)
     time = models.DateTimeField(auto_now_add=True)
