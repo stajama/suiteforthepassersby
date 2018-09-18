@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get('suiteforthepassersbyKEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-if os.environ.get('location') == 'StamosHome':
+if os.environ.get('location') != 'heroku98sdfeQ109099(3':
     ALLOWED_HOSTS = []
 else:
     ALLOWED_HOSTS = ['quiet-hamlet-75383.herokuapp.com', 'www.suiteforthepassersby.com']

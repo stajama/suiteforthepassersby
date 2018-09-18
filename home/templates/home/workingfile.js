@@ -1,38 +1,3 @@
-{% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js">
-</head>
-<body>
-
-<h1 id="nextTo">You are not near any sculptures.</h1>
-
-<p id="startLat">x</p>
-<p id="startLon">y</p>
-<p id="distance1">1</p>
-<p id="distance2">2</p>
-<p id="distance3">3</p>
-<p id="distance4">4</p>
-<p id="distance5">5</p>
-<p id="distance6">6</p>
-<p id="distance7">7</p>
-<p id="distance8">8</p>
-<p id="distance9">9</p>
-<p id="distance10">10</p>
-<p id="distance11">11</p>
-<p id="distance12">12</p>
-
-
-
-<br>
-<button id="start">PRESS HERE TO START</button>
-<button id="stop">EMERGENCY STOP</button>
-<br>
-
-
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.js"></script>
-<script type="text/javascript">
         /* Script uses HTML5 Geolocation to get regular GPS location updates
         from end-user devices. When initialized, piece1 (The Promenade) will
         play until the user's geolocation is within the specified trigger
@@ -187,14 +152,14 @@
                                "lat": [39.045812],
                                "lon": [-94.581534],
                                "audio": piece9,
-                               "title": "Headless Figures",
+                               "title": "Headless_Figures",
                                "trigger": [38.1],
                                "startTime": 0};
 
         var rumi = {"name": "Rumi",
                     "lat": [39.045879],
                     "lon": [-94.580090],
-                    "title": "Love is a Madman",
+                    "title": "Love_is_a_Madman",
                     "trigger": [45.72],
                     "startTime": 0,
                     "audio": piece2};
@@ -210,7 +175,7 @@
         var shuttlecockN = {"name": "North ShuttleCock",
                             "lat": [39.043357],
                             "lon": [-94.581032],
-                            "title": "Oda a La Vanguardia",
+                            "title": "Oda_a_La_Vanguardia",
                             "trigger": [44.196],
                             "startTime": 0,
                             "audio": piece4};
@@ -218,13 +183,13 @@
         var shuttlecockS = {"name": "South ShuttleCock",
                             "lat": [39.042691],
                             "lon": [-94.581066],
-                            "title": "Fireflies in the Garden",
+                            "title": "Fireflies_in_the_Garden",
                             "trigger": [44.196],
                             "startTime": 0,
                             "audio": piece5};
 
         var shuttleTransition = {"name": "Transition",
-                                  "title": "Both light and shadow",
+                                  "title": "Both_light_and_shadow",
                                   "startTime": 0,
                                   "audio": piece6,
                                   "lat": [0],
@@ -238,7 +203,7 @@
                                   "lon": [0]};
 
         var rooftop = {"name": "Bloch Rooftop, 'Turbo,' or 'Ferryman'",
-                        "title": "Big Muddy",
+                        "title": "Big__Muddy",
                         "startTime": 0,
                         "audio": piece7,
                         "lat": [39.043987, 39.043743],
@@ -246,7 +211,7 @@
                         "trigger": [28.956, 30.48]};
 
         var fourMotives1 = {"name": "Henry Moore Sculptures",
-                        "title": "To Cast: Four Motives",
+                        "title": "To_Cast__Four_Motives",
                         "startTime": 0,
                         "audio": piece8,
                         "lat": [39.042582, 39.04288, 39.043271, 39.043560, 39.043824],
@@ -260,8 +225,7 @@
         console.log('1')
         if (navigator.geolocation) {
             console.log('Geolocation is supported!');
-        }
-        else {
+        } else {
             console.log('Geolocation is not supported for this Browser/OS.');
             // It may be useful to the end-user to redirect them to a page stating
             // that Geolocation is required for the full experience. This is also
@@ -279,9 +243,11 @@
             var startPos;
             currentlyPlaying = piece1();
             currentlyPlaying.play();
+
             var geoOptions = {
                 enableHighAccuracy: true
             };
+
             console.log('3');
             var geoSuccess = async function(position) {
                 startPos = position;
@@ -381,6 +347,7 @@
                                 transitioning = false;
                                 return;
                             });
+                            break;
 
                         } else { changed = true; action = "already playing shuttle transition music";}
                     }
@@ -408,44 +375,45 @@
                                             newPlaying.fade(0.0, 1.0, TRANSITION_TIME);
                                             currentlyPlaying.fade(1.0, 0.0, TRANSITION_TIME);
                                             await sleep(TRANSITION_TIME);
-                                            switch(currentlyPlaying) {
-                                                case rooftop['audio']():
-                                                    rooftop['startTime'] = currentlyPlaying.seek();
-                                                    break;
-                                                case fourMotives1['audio']():
-                                                    fourMotives1['startTime'] = currentlyPlaying.seek();
-                                                    break;
-                                                case standingFigures['audio']():
-                                                    standingFigures['startTime'] = currentlyPlaying.seek();
-                                                    break;
-                                                case rumi['audio']():
-                                                    rumi['startTime'] = currentlyPlaying.seek();
-                                                    break;
-                                                case ferment['audio']():
-                                                    ferment['startTime'] = currentlyPlaying.seek();
-                                                    break;
-                                                case shuttlecockN['audio']():
-                                                    shuttlecockN['startTime'] = currentlyPlaying.seek();
-                                                    break;
-                                                case shuttlecockS['audio']():
-                                                    shuttlecockS['startTime'] = currentlyPlaying.seek();
-                                                    break;
-                                                case promenade['audio']():
-                                                    promenade['startTime'] = currentlyPlaying.seek();
-                                                    break;
-                                                case shuttleTransition['audio']():
-                                                    shuttleTransition['startTime'] = currentlyPlaying.seek();
-                                                    break;
-                                            }
+                                                switch(currentlyPlaying) {
+                                                    case rooftop['audio']():
+                                                        rooftop['startTime'] = currentlyPlaying.seek();
+                                                        break;
+                                                    case fourMotives1['audio']():
+                                                        fourMotives1['startTime'] = currentlyPlaying.seek();
+                                                        break;
+                                                    case standingFigures['audio']():
+                                                        standingFigures['startTime'] = currentlyPlaying.seek();
+                                                        break;
+                                                    case rumi['audio']():
+                                                        rumi['startTime'] = currentlyPlaying.seek();
+                                                        break;
+                                                    case ferment['audio']():
+                                                        ferment['startTime'] = currentlyPlaying.seek();
+                                                        break;
+                                                    case shuttlecockN['audio']():
+                                                        shuttlecockN['startTime'] = currentlyPlaying.seek();
+                                                        break;
+                                                    case shuttlecockS['audio']():
+                                                        shuttlecockS['startTime'] = currentlyPlaying.seek();
+                                                        break;
+                                                    case promenade['audio']():
+                                                        promenade['startTime'] = currentlyPlaying.seek();
+                                                        break;
+                                                    case shuttleTransition['audio']():
+                                                        shuttleTransition['startTime'] = currentlyPlaying.seek();
+                                                        break;
+                                                }
 
-                                        currentlyPlaying = newPlaying;
-                                        newPlaying = null;
-                                        transitioning = false;
-                                        // (TODO) requires action text for logging event
-                                        return;;
+                                            currentlyPlaying = newPlaying;
+                                            newPlaying = null;
+                                            transitioning = false;
+                                            // (TODO) requires action text for logging event
+                                            return;
                                         });
+                                        break;
                                     } else {
-                                        action = "already playing " + sculptures[i]['title'];
+                                        action = "already_playing_" + sculptures[i]['title'];
                                     }
                                 }
                             }
@@ -501,23 +469,20 @@
                             // (TODO) Action text required for testing event.
                             return;
                             });
-                                }
-                            }
                         } else {
                             action = "promenade_already_playing"
                         }
                     }
-
                 } else {
                     action = 'transitioning'
                     console.log("transition being blocked");
                 }
+            // Logging event: send log data to server (id/geoLat/geoLong/action)
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', "http:127.0.0.1:8000/logging/" + LOGGING_ID + '/' + startPos.coords.latitude + '/' + startPos.coords.longitude + '/' + cleanActionStrings(action), true);
+            xhr.send();
             };
-                // Logging event: send log data to server (id/geoLat/geoLong/action)
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', "http:127.0.0.1:8000/logging/" + LOGGING_ID + '/' + startPos.coords.latitude + '/' + startPos.coords.longitude + '/' + cleanActionStrings(action), true);
-                xhr.send();
-            };
+
             var geoError = function(error) {
                 console.log('Error occurred. Error code: ' + error.code);
                 // error.code can be:
@@ -575,8 +540,4 @@
             }
             return output;
         }
-        
-    </script>
-</body>
-</html>
 
