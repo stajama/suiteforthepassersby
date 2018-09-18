@@ -26,24 +26,10 @@
         var newPlaying = null;
         var stopTheShow = false;
 
-        /* TODO (1) Not convinced this is a good idea. Christina came across a
-        spot in the garden that may be a common GPS dead-spot. Her request is
-        to implement a rolling average system; something that will throw away
-        junk data (such as GPS coords that vary too far from the last location
-        to be humanly feasible). While this is a good idea and will ensure a
-        more robust and dependable app, I worry about adding too much
-        additional calculation/strain, considering the wide range of phones
-        that may be using the app. If required, a system to [record the
-        last good position data, compare it to the current position, decide
-        if the distance between the two is outside of the realm of feasible,
-        and somehow split the difference to decide a new last know position]
-        is required.
-        */
-        // var last_position = {'lat': null, 'lon': null};
-        // const MAX_DIFF = 3; // Will through out results over this distance (eliminate eradicate data).
-        /* These variables are all Howler objects of the desired tracks of
-        music for the entire piece. piece1 should be The Promenade to achieve
-        the desired effect.
+
+        /* Each piece[#] is a function. When that piece is needed, checks are
+        made to see if currentlyPlaying matches the result of said function.
+        If not, newPlaying is set to the results of that function.
         */
         var piece1 = function () {
             x = new Howl({
@@ -126,27 +112,13 @@
             return x;
         };
 
-        /* DEPRECATED: Use sculpture array - sculpture[index]["audio"]*/
-        // var allMusic = [piece1, piece2, piece3, piece4, piece5, piece6, piece7, piece8, piece9];
-        /* These key-value pair collections represent the necessary meta data
-        for each track/piece to be used.
-        "name": the name of the related sculpture or environment for the piece
-        "lat": the latitude of the central point of the related sculpture or
-        environment
-        "lon": the longitude of the central point of the related sculpture or
-        environment
-        "audio": the desired Howler audio object to be played within the
-        trigger radius of the sculpture or environment
-        "title": the title of the related piece of music/track for the related
-        sculpture or environment.
-        "trigger": the distance from the lat/lon the user must be for the desired
-        piece/track to begin to play.
-        "starttime": records the last top time for the piece so that it may be
-        restarted at that time if the user re-enters it's radius.
-        NOTE - shuttleTransition is a special-use-case. The desired functionality
-        is that if a user is located within the trigger radii of both the Northern
-        and Southern Shuttlecocks, a special transitional piece is played. "name",
-        title, startTime and audio are all that are required of this dictionary.
+        /* Each dictionary (JSON object) is used to store the name of the
+        associated sculpture, the function to create the correct Howl object,
+        the title of the desired piece, the central GPS coordinates for the
+        sculpture, the trigger radius distance from the sculpture, and the
+        play start time for that piece. 'startTime' is updated whenever a
+        piece is stopped so that each time the piece is called, it can continue
+        from where the user last heard it.
         */
         var standingFigures = {"name": "Standing Figures",
                                "lat": [39.045812],
@@ -188,6 +160,14 @@
                             "startTime": 0,
                             "audio": piece5};
 
+        /* promenade and shuttleTransition do not have trigger radii or
+        reasonable coordinate locations. The desired functionality is that
+        promenade be performed whenever the user is not in proximity of
+        any sculpture and that the transition music is only play when the
+        user is located in the overlapping radii of the Northern and
+        Southern shuttlecocks. In checks not related to these two locations,
+        calculations are skipped when the first lat/lon values == 0/0.
+        */
         var shuttleTransition = {"name": "Transition",
                                   "title": "Both_light_and_shadow",
                                   "startTime": 0,
@@ -218,6 +198,12 @@
                         "lon": [-94.581893, -94.581829, -94.581797, -94.581807, -94.581822],
                         "trigger": [30.48, 28.956, 28.956, 28.956, 27.432]};
 
+        /* Deprecated Functionality:
+        The array 'sculptures' was previously used to iterate through all
+        available pieces. This has since changed. This array has only been
+        maintained to keep testing UI data available without too much refactoring
+        for a temporary debugging measure.
+        */
         var sculptures = [rooftop, fourMotives1, standingFigures, rumi, ferment, shuttlecockS,
                             shuttlecockN, shuttleTransition, promenade];
 
@@ -234,11 +220,11 @@
             // to do so.
         }
         console.log('2')
+
         /* Main FUnction. Must either start window.onload (should be
         possible thanks to Howler override of DOM exceptions) or through
         a button.onclick or similar user-initiated event.
         */
-
         document.getElementById('start').onclick = async function() {
             var startPos;
             currentlyPlaying = piece1();
@@ -349,7 +335,9 @@
                             });
                             break;
 
-                        } else { changed = true; action = "already playing shuttle transition music";}
+                        } else {
+                            changed = true; action = "already playing shuttle transition music";
+                        }
                     }
                     console.log("transition tested");
                     /* if NOT changing to transition music, iterate through each
@@ -477,10 +465,7 @@
                     action = 'transitioning'
                     console.log("transition being blocked");
                 }
-            // Logging event: send log data to server (id/geoLat/geoLong/action)
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', "http:127.0.0.1:8000/logging/" + LOGGING_ID + '/' + startPos.coords.latitude + '/' + startPos.coords.longitude + '/' + cleanActionStrings(action), true);
-            xhr.send();
+                sendLoggingData(LOGGING_ID, startPos, action);
             };
 
             var geoError = function(error) {
@@ -498,6 +483,7 @@
             navigator.geolocation.watchPosition(geoSuccess, geoError, geoOptions);
         };
         console.log('time to worry if otherwise blank');
+
         /* Function for calculating users-position from a sculpture.
         Math and code explained better at
         https://www.movable-type.co.uk/scripts/latlong.html
@@ -515,29 +501,20 @@
             var d = R * c;
             return d;
         };
+
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
-        // IMPORTANT !!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!
-        /* This function is tied to the Emergency Stop button. It simply stops
-        all Howler objects from playing in the off chance that something goes
-        horribly wrong. Any new Howler objects must be added to the this
-        function.
-        */
+
         document.getElementById('stop').onclick = function() {
             stopTheShow = true;
             newPlaying = false;
             currentlyPlaying = false;
         };
-        function cleanActionStrings(actionString) {
-            var output = "";
-            for (i = 0; i < actionString.length; i++) {
-                if (actionString.charAt(i) == ' ') {
-                    output = output + "_";
-                } else {
-                    output = output + actionString.charAt(i);
-                }
-            }
-            return output;
+
+        function sendLoggingData(LOGGING_ID, startPos, action) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', "http:127.0.0.1:8000/logging/" + LOGGING_ID + '/' + startPos.coords.latitude + '/' + startPos.coords.longitude + '/' + action, true);
+            xhr.send();
         }
 
