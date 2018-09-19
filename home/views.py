@@ -6,7 +6,7 @@ from . import models
 
 # Create your views here.
 def mainView(request):
-    return HttpResponse(loader.get_template('home/testLogging.html').render(None, request))
+    return HttpResponse(loader.get_template('home/test.html').render(None, request))
 
 def getID(request):
     print("pre: " + str(models.Tester.objects.all()))

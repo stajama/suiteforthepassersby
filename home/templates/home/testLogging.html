@@ -262,9 +262,13 @@
         */
         document.getElementById('start').onclick = async function() {
             var startPos;
+            var button = document.getElementById('start');
+            button.innerHTML = 'PLEASE REFRESH TO RESTART';
+            button.disabled = true;
             currentlyPlaying = piece1();
             currentlyPlaying.play();
-
+            console.log('start of function');
+            console.log(currentlyPlaying);
             var geoOptions = {
                 enableHighAccuracy: true
             };
@@ -275,6 +279,13 @@
                     return;
                 }
                 startPos = position;
+                console.log("start geoSuccess");
+                console.log('currentlyPlaying:');
+                console.log(currentlyPlaying);
+                for (var i = 0; i < sculptures.length; i++) {
+                    console.log(sculptures[i]['name']);
+                    console.log(sculptures[i]);
+                }
                 // var action: Logging event: for logging the exact situation each time geoSuccess runs
                 var action;
                 /* These element updates are largely only for testing.
@@ -325,108 +336,148 @@
                 */
 
                 if (!transitioning) {
+                    console.log('start of transition check')
                     var changed = false;
                     // if in range of both Shuttlecocks: play transition music
                     if (calculateDistance(startPos.coords, shuttlecockN["lat"][0], shuttlecockN["lon"][0]) <= shuttlecockN["trigger"][0] &&
                         calculateDistance(startPos.coords, shuttlecockS["lat"][0], shuttlecockS["lon"][0]) <= shuttlecockS["trigger"][0]) {
                         document.getElementById('nextTo').innerHTML = "You are in the transition area between the ShuttleCocks";
+                        console.log('between shuttlecocks')
                         if (currentlyPlaying != piece6()) {
+                            console.log('transition music not playing. changing...');
                             transitioning = true;
                             changed = true;
                             newPlaying = piece6();
                             newPlaying.seek(shuttleTransition['startTime']);
                             newPlaying.play();
+                            console.log('newPlaying set');
+                            console.log(newPlaying);
+                            console.log('set to ' + newPlaying.seek());
+
                             await newPlaying.once('play', async function () {
                                 newPlaying.fade(0.0, 1.0, TRANSITION_TIME);
                                 currentlyPlaying.fade(1.0, 0.0, TRANSITION_TIME);
+                                console.log('fading out currentlyPlaying');
+                                console.log(currentlyPlaying);
                                 await sleep(TRANSITION_TIME);
                                 switch(currentlyPlaying) {
                                     case rooftop['audio']():
+                                        console.log('currentlyPlaying was rooftop');
                                         rooftop['startTime'] = currentlyPlaying.seek();
                                         break;
                                     case fourMotives1['audio']():
                                         fourMotives1['startTime'] = currentlyPlaying.seek();
+                                        console.log('currentlyPlaying was fourMotives1');
                                         break;
                                     case standingFigures['audio']():
                                         standingFigures['startTime'] = currentlyPlaying.seek();
+                                        console.log('currentlyPlaying was standingFigures');
                                         break;
                                     case rumi['audio']():
                                         rumi['startTime'] = currentlyPlaying.seek();
+                                        console.log('currentlyPlaying was rumi');
                                         break;
                                     case ferment['audio']():
                                         ferment['startTime'] = currentlyPlaying.seek();
+                                        console.log('currentlyPlaying was ferment');
                                         break;
                                     case shuttlecockN['audio']():
                                         shuttlecockN['startTime'] = currentlyPlaying.seek();
+                                        console.log('currentlyPlaying was shuttlecockN');
                                         break;
                                     case shuttlecockS['audio']():
                                         shuttlecockS['startTime'] = currentlyPlaying.seek();
+                                        console.log('currentlyPlaying was shuttlecockS');
                                         break;
                                     case promenade['audio']():
                                         promenade['startTime'] = currentlyPlaying.seek();
+                                        console.log('currentlyPlaying was promenade');
                                         break;
                                 }
                                 currentlyPlaying = newPlaying;
                                 newPlaying = null;
                                 transitioning = false;
+                                console.log('end of Transition transitioning. currentlyPlaying - newPlaying - transitioning - changed')
+                                console.log(currentlyPlaying);
+                                console.log(newPlaying);
+                                console.log(transitioning);
+                                console.log(changed);
                                 return;
                             });
                         } else {
                             changed = true; action = "already playing shuttle transition music";
                         }
                     }
-                    console.log("transition tested");
+                    // console.log("transition tested");
                     /* if NOT changing to transition music, iterate through each
                     sculpture. If the user is in range of a new sculpture, change
                     to that respective piece/track.
                     */
                     if (!changed) {
-        loop1:
+                        loop1:
                         for (var i = 0; i < sculptures.length; i++) {
                             if (sculptures[i]["lat"][0] == 0 && sculptures[i]["lon"][0] == 0) {
                                 continue;
                             };
+                            console.log('normal transition: checking ' + sculptures[i]['name']);
                             for (var posr = 0; posr < sculptures[i]['lat'].length; posr++) {
                                 if (calculateDistance(startPos.coords, sculptures[i]["lat"][posr], sculptures[i]["lon"][posr]) <= sculptures[i]["trigger"][posr]) {
                                     document.getElementById('nextTo').innerHTML = "You are near " + sculptures[i]["name"] + ", now playing: " + sculptures[i]["title"] + ".";
+                                    console.log('got a hit: ' + sculptures[i]['name']);
                                     if (currentlyPlaying != sculptures[i]["audio"]()) {
+                                        console.log(sculptures[i]['name'] + ' not currentlyPlaying. changing...')
                                         transitioning = true;
                                         changed = true;
                                         newPlaying = sculptures[i]["audio"]();
                                         newPlaying.seek(sculptures[i]['startTime']);
                                         newPlaying.play();
-
+                                        console.log('newPlaying set');
+                                        console.log(newPlaying);
+                                        console.log('set to ' + newPlaying.seek());
                                         await newPlaying.once("play", async function () {
                                             newPlaying.fade(0.0, 1.0, TRANSITION_TIME);
+                                            console.log(newPlaying);
                                             currentlyPlaying.fade(1.0, 0.0, TRANSITION_TIME);
+                                            console.log(currentlyPlaying);                                            
+                                            console.log('fading out currentlyPlaying');
+                                            console.log(currentlyPlaying);
                                             await sleep(TRANSITION_TIME);
                                                 switch(currentlyPlaying) {
                                                     case rooftop['audio']():
                                                         rooftop['startTime'] = currentlyPlaying.seek();
+                                                        console.log('currentlyPlaying was rooftop');
                                                         break;
                                                     case fourMotives1['audio']():
                                                         fourMotives1['startTime'] = currentlyPlaying.seek();
+                                                        console.log('currentlyPlaying was fourMotives1');
                                                         break;
                                                     case standingFigures['audio']():
                                                         standingFigures['startTime'] = currentlyPlaying.seek();
+                                                        console.log('currentlyPlaying was standingFigures');
                                                         break;
                                                     case rumi['audio']():
                                                         rumi['startTime'] = currentlyPlaying.seek();
+                                                        console.log('currentlyPlaying was rumi');
                                                         break;
                                                     case ferment['audio']():
                                                         ferment['startTime'] = currentlyPlaying.seek();
+                                                        console.log('currentlyPlaying was ferment');
                                                         break;
                                                     case shuttlecockN['audio']():
                                                         shuttlecockN['startTime'] = currentlyPlaying.seek();
+                                                        console.log('currentlyPlaying was shuttlecockN');
                                                         break;
                                                     case shuttlecockS['audio']():
                                                         shuttlecockS['startTime'] = currentlyPlaying.seek();
+                                                        console.log('currentlyPlaying was shuttlecockS');
                                                         break;
                                                     case promenade['audio']():
                                                         promenade['startTime'] = currentlyPlaying.seek();
+                                                        console.log('currentlyPlaying was promenade');
                                                         break;
                                                     case shuttleTransition['audio']():
                                                         shuttleTransition['startTime'] = currentlyPlaying.seek();
+                                                        console.log('currentlyPlaying was Transition');
                                                         break;
                                                 }
 
@@ -434,6 +485,11 @@
                                             newPlaying = null;
                                             transitioning = false;
                                             // (TODO) requires action text for logging event
+                                            console.log('end of normal transitioning. currentlyPlaying - newPlaying - transitioning - changed')
+                                            console.log(currentlyPlaying);
+                                            console.log(newPlaying);
+                                            console.log(transitioning);
+                                            console.log(changed);                                    
                                             return;
                                         });
                                         break loop1;
@@ -445,52 +501,70 @@
                         }
                     }
 
-                    console.log("allMusic tested");
+                    // console.log("allMusic tested");
                     /* if NOT changing to transition music AND NOT changing
                     to another piece, play The Promenade music.
                     */
                     if (!changed) {
                         document.getElementById('nextTo').innerHTML = "You are not near any sculptures."
+                        console.log('nothing near');
                         if (!currentlyPlaying == promenade["audio"]()) {
+                            console.log('promenade not currentlyPlaying. changing...')
                             transitioning = true;
                             newPlaying = promenade["audio"]();
                             newPlaying.seek(promenade['startTime']);
                             newPlaying.play();
+                            console.log('newPlaying set');
+                            console.log(newPlaying);
+                            console.log('set to ' + newPlaying.seek());
                             await newPlaying.once("play", async function () {
                                 newPlaying.fade(0.0, 1.0, TRANSITION_TIME);
                                 currentlyPlaying.fade(1.0, 0.0, TRANSITION_TIME);
+                                console.log('fading out currentlyPlaying');
+                                console.log(currentlyPlaying);      
                                 await sleep(TRANSITION_TIME);
                             // (TODO) this block updates the startTime for currentlyPlaying
                                 switch(currentlyPlaying) {
                                     case rooftop['audio']():
                                         rooftop['startTime'] = currentlyPlaying.seek();
+                                        console.log('currentlyPlaying was rooftop');
                                         break;
                                     case fourMotives1['audio']():
                                         fourMotives1['startTime'] = currentlyPlaying.seek();
+                                        console.log('currentlyPlaying was fourMotives1');
                                         break;
                                     case standingFigures['audio']():
                                         standingFigures['startTime'] = currentlyPlaying.seek();
+                                        console.log('currentlyPlaying was standingFigures');
                                         break;
                                     case rumi['audio']():
                                         rumi['startTime'] = currentlyPlaying.seek();
+                                        console.log('currentlyPlaying was rumi');
                                         break;
                                     case ferment['audio']():
                                         ferment['startTime'] = currentlyPlaying.seek();
+                                        console.log('currentlyPlaying was ferment');
                                         break;
                                     case shuttlecockN['audio']():
                                         shuttlecockN['startTime'] = currentlyPlaying.seek();
+                                        console.log('currentlyPlaying was shuttlecockN');
                                         break;
                                     case shuttlecockS['audio']():
                                         shuttlecockS['startTime'] = currentlyPlaying.seek();
+                                        console.log('currentlyPlaying was shuttlecockS');
                                         break;
                                     case shuttleTransition['audio']():
                                         shuttleTransition['startTime'] = currentlyPlaying.seek();
+                                        console.log('currentlyPlaying was Transition');
                                         break;
                                 }
                             currentlyPlaying = newPlaying;
                             newPlaying = null;
                             transitioning = false;
-
+                            console.log('end of promenade transitioning. currentlyPlaying - newPlaying - transitioning')
+                            console.log(currentlyPlaying);
+                            console.log(newPlaying);
+                            console.log(transitioning);     
                             // (TODO) Action text required for testing event.
                             return;
                             });
@@ -500,7 +574,7 @@
                     }
                 } else {
                     action = 'transitioning'
-                    console.log("transition being blocked");
+                    // console.log("transition being blocked");
                 }
                 sendLoggingData(LOGGING_ID, startPos, action);
             };
@@ -544,9 +618,23 @@
         }
 
         document.getElementById('stop').onclick = function() {
+            console.log('button pressed');
+            console.log(stopTheShow);
+            console.log(newPlaying);
+            console.log(currentlyPlaying);
             stopTheShow = true;
-            newPlaying = false;
-            currentlyPlaying = false;
+            if (newPlaying) {
+                newPlaying.pause();
+                newPlaying = null;
+            }
+            if (currentlyPlaying) {
+                currentlyPlaying.pause();
+                currentlyPlaying = null;
+            }
+            console.log('after button pressed:');
+            console.log(stopTheShow);
+            console.log(newPlaying);
+            console.log(currentlyPlaying);
         };
 
         function sendLoggingData(LOGGING_ID, startPos, action) {

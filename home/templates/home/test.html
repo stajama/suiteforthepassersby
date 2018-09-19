@@ -23,8 +23,6 @@
 <p id="distance10">10</p>
 <p id="distance11">11</p>
 <p id="distance12">12</p>
-<p id="distance13">13</p>
-<p id="distance14">14</p>
 
 
 <br>
@@ -43,7 +41,7 @@
         */
         const MAX_VOLUME = 1.0;
         const MIN_VOLUME = 0.0;
-        const TRANSITION_TIME = 10; // This variable controls the crossfade time when a piece transition is triggered.
+        const TRANSITION_TIME = 6; // This variable controls the crossfade time when a piece transition is triggered.
         var transitioning = false;
         var currentlyPlaying = 0;
         
@@ -278,6 +276,9 @@
         document.getElementById('start').onclick = async function() {
             var startPos;
             currentlyPlaying = piece1.play();
+            var button = document.getElementById('start');
+            button.innerHTML = 'PLEASE REFRESH TO RESTART';
+            button.disabled = true;
 
             var geoOptions = {
                 enableHighAccuracy: true
@@ -363,7 +364,7 @@
                                     console.log("starting " + shuttleTransition["title"] + " at " + shuttleTransition["startTime"]);
                                     shuttleTransition["audio"].seek(shuttleTransition["startTime"]);
                                     shuttleTransition["audio"].play();
-                                    await shuttleTransition["audio"].onload();
+                                    console.log('actual object seek time: ' + shuttleTransition["audio"].seek());
                                     shuttleTransition["audio"].fade(MIN_VOLUME, MAX_VOLUME, 1000 * TRANSITION_TIME);
                                     sculptures[j]["audio"].fade(MAX_VOLUME, MIN_VOLUME, 1000 * TRANSITION_TIME);
                                     await sleep(1000 * TRANSITION_TIME);
@@ -396,8 +397,8 @@
                                             transitioning = true;
                                             console.log("starting " + sculptures[i]["title"] + " at " + sculptures[i]["startTime"]);
                                             sculptures[i]["audio"].seek(sculptures[i]["startTime"]);
+                                            console.log('actual object seek time: ' + sculptures[i]["audio"].seek());
                                             sculptures[i]["audio"].play();
-                                            await sculptures[i]["audio"].onload();
                                             sculptures[i]["audio"].fade(MIN_VOLUME, MAX_VOLUME, 1000 * TRANSITION_TIME);
                                             sculptures[j]["audio"].fade(MAX_VOLUME, MIN_VOLUME, 1000 * TRANSITION_TIME);
                                             await sleep(1000 * TRANSITION_TIME);
@@ -428,7 +429,7 @@
                                     console.log("starting " + promenade["title"] + " at " + promenade["startTime"]);
                                     promenade["audio"].seek(promenade["startTime"]);
                                     promenade["audio"].play();
-                                    await promenade["audio"].onload();
+                                    console.log('actual object seek time: ' + promenade["audio"].seek());       
                                     promenade["audio"].fade(MIN_VOLUME, MAX_VOLUME, 1000 * TRANSITION_TIME);
                                     sculptures[j]["audio"].fade(MAX_VOLUME, MIN_VOLUME, 1000 * TRANSITION_TIME);
                                     await sleep(1000 * TRANSITION_TIME);
