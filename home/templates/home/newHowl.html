@@ -13,124 +13,51 @@
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.js"></script>
     <script type="text/javascript">
-        var button1 = document.getElementByID('1');
-        var button2 = document.getElementByID('2');
-        var button3 = document.getElementByID('3');
-        var button4 = document.getElementByID('4');
-        var startButton = document.getElementByID('start');
+        var button1 = document.getElementById('1');
+        var button2 = document.getElementById('2');
+        var button3 = document.getElementById('3');
+        var button4 = document.getElementById('4');
+        var startButton = document.getElementById('start');
 
-        var standingFigures = {"name": "Standing Figures",
-                    "lat": 39.045812, 
-                    "lon": -94.581534, 
-                    "audio": piece9, 
-                    "title": "Headless Figures", 
-                    "trigger": 38.1, 
-                    "startTime": 0,
-                    "targetAudio": ["{% static "Headless_Figures.mp3" %}"]};
+        var testm = new Howl({
+            src: ["{% static "test.mp3" %}"],
+            loop: true,
+            html5: true,
+        })
 
-        var rumi = {"name": "Rumi", 
-                    "lat": 39.045879, 
-                    "lon": -94.580090, 
-                    "title": "Love is a Madman", 
-                    "trigger": 45.72, 
-                    "startTime": 0, 
-                    "audio": piece2},
-                    "targetAudio": ["{% static "Love_is_a_Madman.mp3" %}"];
+        var hold = [testm];
 
-        var ferment = {"name": "Ferment", 
-                       "lat": 39.042758, 
-                       "lon": -94.579753, 
-                       "title": "Broken", 
-                       "trigger": 57.912, 
-                       "startTime": 0, 
-                       "audio": piece3,
-                        "targetAudio": ["{% static "Broken.mp3" %}"];
+        var music = hold[0];
 
-        var shuttlecockN = {"name": "North ShuttleCock", 
-                            "lat": 39.043357, 
-                            "lon": -94.581032, 
-                            "title": "Oda a La Vanguardia", 
-                            "trigger": 44.196, 
-                            "startTime": 0, 
-                            "audio": piece4,
-                            "targetAudio": ["{% static "Oda_a_la_Vanguardia.mp3" %}"];};
-
-        var shuttlecockS = {"name": "South ShuttleCock", 
-                            "lat": 39.042691, 
-                            "lon": -94.581066, 
-                            "title": "Fireflies in the Garden", 
-                            "trigger": 44.196, 
-                            "startTime": 0, 
-                            "audio": piece5,
-                            "targetAudio": ["{% static "Lightning_Bugs_in_the_Garden.mp3" %}"]};
-
-        var allThings = [standingFigures, rumi, ferment, shuttlecockN, shuttlecockS];
-
-        startButton.onclick = function () {
-            var audio1 new Howl({
-                            src: standingFigures["targetAudio"],
-                            html5: true,
-                            loop: true
-                        });
-            standingFigures["audio"] = audio1;
-            standingFigures["audio"].play();
+        button1.onclick = function () {
+            music.seek(0);
         };
 
-        button1.onclick = async function () {
-            if (!rumi["audio"]) {
-                for (i = 0; i < allThings.length(); i++) {
-                    if (allThings[i]["audio"]) {
-                        var rumi["audio"] = new Howl({
-                            src: rumi["targetAudio"],
-                            html5: true,
-                            loop: true
-                        });
-                        rumi["audio"].seek(rumi["startTime"])
-                        rumi["audio"].play();
-                        rumi["audio"].volume(0.0);
-                        rumi["audio"].once("play", async function () {
-                                                            rumi["audio"].fade(0.0, 1.0, 6000);
-                                                            allThings[i]["audio"].fade(1.0, 0.0, 6000);
-                                                            await sleep(6000);
-                                                            allThings[i][startTime] = allThings[i]["audio"].seek();
-                                                            allThings[i]["audio"].pause();
-                                                            allThings[i]["audio"].unload();
-                                                            allThings[i]["audio"] = null;
-                        });
-                    }
-                }
+        button2.onclick = function () {
+            music.seek(60);
+        };
+
+        button3.onclick = function () {
+            music.seek(120);
+        };
+
+        button4.onclick = function () {
+            music.seek(180);
+        };
+
+        startButton.onclick = async function () {
+            if (music.playing()) {
+                music.fade(1.0, 0.0, 6000);
+                await sleep(6000);
+                music.pause()
+                console.log('stopped')
+            } else {
+                music.play();
+                music.fade(0.0, 1.0, 6000);
+                await sleep(6000);
+                console.log('started')
             }
         }
-
-        button2.onclick = async function () {
-            if (!standingFigures["audio"]) {
-                for (i = 0; i < allThings.length(); i++) {
-                    if (allThings[i]["audio"]) {
-                        var standingFigures["audio"] = new Howl({
-                            src: standingFigures["targetAudio"],
-                            html5: true,
-                            loop: true
-                        });
-                        standingFigures["audio"].seek(rumi["startTime"])
-                        standingFigures["audio"].play();
-                        standingFigures["audio"].volume(0.0);
-                        standingFigures["audio"].once("play", async function () {
-                                                            standingFigures["audio"].fade(0.0, 1.0, 6000);
-                                                            allThings[i]["audio"].fade(1.0, 0.0, 6000);
-                                                            await sleep(6000);
-                                                            allThings[i][startTime] = allThings[i]["audio"].seek();
-                                                            allThings[i]["audio"].pause();
-                                                            allThings[i]["audio"].unload();
-                                                            allThings[i]["audio"] = null;
-                        });
-                    }
-                }
-            }
-        }
-
-
-
-
 
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
