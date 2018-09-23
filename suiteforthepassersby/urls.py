@@ -15,11 +15,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, re_path
+from django.conf import settings
 from django.conf.urls import include, url
+from django.http import HttpResponseRedirect
 import home.views
+
 
 urlpatterns = [
     re_path(r'logging/*', include('home.urls')),
+    url(r'^favicon.ico/$', lambda x: HttpResponseRedirect(settings.STATIC_URL + 'ico/favicon.ico')), # google chrome favicon fix
     re_path('', home.views.mainView),
     path('admin/', admin.site.urls),
 ]
