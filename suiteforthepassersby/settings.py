@@ -25,13 +25,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ.get('suiteforthepassersbyKEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 if os.environ.get('location') != 'heroku98sdfeQ109099(3':
     ALLOWED_HOSTS = []
+    DEBUG = True
 else:
     ALLOWED_HOSTS = ['quiet-hamlet-75383.herokuapp.com', 'www.suiteforthepassersby.com']
     SECURE_SSL_REDIRECT = True
+    DEBUG = False
 
 
 # Application definition

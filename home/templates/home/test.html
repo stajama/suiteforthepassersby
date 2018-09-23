@@ -54,7 +54,7 @@
                 */
                 var LOGGING_ID;
                 var xhr = new XMLHttpRequest();
-                xhr.open('GET', "https://suiteforthepassersby.com/logging", true);
+                xhr.open('GET', "https://www.suiteforthepassersby.com/logging", true);
                 xhr.send();
                 xhr.onreadystatechange = processRequest;
                 function processRequest(e) {
@@ -70,7 +70,7 @@
                 LOGGING_ID, geoLat, getLong, active text, */
                 function sendLoggingData(LOGGING_ID, startPos, action) {
                     var xhr = new XMLHttpRequest();
-                    xhr.open('GET', "https://suiteforthepassersby.com/logging/" + LOGGING_ID + '/' + startPos.coords.latitude + '/' + startPos.coords.longitude + '/' + action, true);
+                    xhr.open('GET', "https://www.suiteforthepassersby.com/logging/" + LOGGING_ID + '/' + startPos.coords.latitude + '/' + startPos.coords.longitude + '/' + action, true);
                     xhr.send();
                 }
 
