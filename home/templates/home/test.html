@@ -55,10 +55,11 @@
                 */
                 var LOGGING_ID;
                 var xhr = new XMLHttpRequest();
-                xhr.open('GET', "https://www.suiteforthepassersby.com/logging", true);
+                // xhr.open('GET', "https://www.suiteforthepassersby.com/logging", true);
+                xhr.open('GET', "127.0.0.1/logging", true);
                 xhr.send();
                 xhr.onreadystatechange = processRequest;
-                function processRequest(e) {
+                async function processRequest(e) {
                     if (xhr.readyState == 4 && xhr.status == 200) {
                         var response = JSON.parse(xhr.responseText);
                         LOGGING_ID = response.id;
@@ -69,10 +70,13 @@
                 // LOGGING
                 /* Function for sending log data post. Structure:
                 LOGGING_ID, geoLat, getLong, active text, */
-                function sendLoggingData(LOGGING_ID, startPos, action) {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('GET', "https://www.suiteforthepassersby.com/logging/" + LOGGING_ID + '/' + startPos.coords.latitude + '/' + startPos.coords.longitude + '/' + action, true);
-                    xhr.send();
+                async function sendLoggingData(LOGGING_ID, startPos, action) {
+                    // var xhr = new XMLHttpRequest();
+                    // // xhr.open('GET', "https://www.suiteforthepassersby.com/logging/" + LOGGING_ID + '/' + startPos.coords.latitude + '/' + startPos.coords.longitude + '/' + action, true);
+                    // var sent = "127.0.0.1:8000/logging/" + LOGGING_ID + '/' + startPos.coords.latitude + '/' + startPos.coords.longitude + '/' + action;
+                    // console.log(sent);
+                    // xhr.open('GET', sent, true);
+                    // xhr.send();
                 }
 
                 // var last_position = {'lat': null, 'lon': null};
@@ -85,33 +89,33 @@
 
                 var piece1 = new Howl({
                         src: ["{% static "Promenade.mp3" %}"],
-                        // html5: true,
+                        html5: true,
                         loop: true
                 });
                 piece1.loop(true);
                 var piece2 = new Howl({
                     src: ["{% static "Love_is_a_Madman.mp3" %}"],
-                    // html5: true
+                    html5: true
                 });
                 piece2.loop(true);
                 var piece3 = new Howl({
                     src: ["{% static "Broken.mp3" %}"],
-                    // html5: true
+                    html5: true
                 });
                 piece3.loop(true);
                 var piece4 = new Howl({
                     src: ["{% static "Oda_a_la_Vanguardia.mp3" %}"],
-                    // html5: true
+                    html5: true
                 });
                 piece4.loop(true);
                 var piece5 = new Howl({
                     src: ["{% static "Lightning_Bugs_in_the_Garden.mp3" %}"],
-                    // html5: true
+                    html5: true
                 });
                 piece5.loop(true);
                 var piece6 = new Howl({
                     src: ["{% static "Voice_Transition.mp3" %}"],
-                    // html5: true
+                    html5: true
                 });
                 piece6.loop(true);
                 var piece7 = new Howl({
@@ -121,12 +125,12 @@
                 piece7.loop(true);
                 var piece8 = new Howl({
                     src: ["{% static "To_Cast_Four_Motives.mp3" %}"],
-                    // html5: true
+                    html5: true
                 });
                 piece8.loop(true);
                 var piece9 = new Howl({
                     src: ["{% static "Headless_Figures.mp3" %}"],
-                    // html5: true
+                    html5: true
                 });
                 piece9.loop(true);
 
@@ -349,17 +353,17 @@
                                             transitioning = true;
                                             // console.log("starting " + shuttleTransition["title"] + " at " + shuttleTransition["startTime"]);
                                             shuttleTransition["audio"].seek(shuttleTransition["startTime"]);
+                                            // await sculptures[i]["audio"].once('load', function () {return;});
                                             shuttleTransition["audio"].play();
                                             // console.log('actual object seek time: ' + shuttleTransition["audio"].seek());
-                                            shuttleTransition["audio"].once('play', async function () {
-                                                shuttleTransition["audio"].fade(MIN_VOLUME, MAX_VOLUME, 1000 * TRANSITION_TIME);
-                                                sculptures[j]["audio"].fade(MAX_VOLUME, MIN_VOLUME, 1000 * TRANSITION_TIME);
-                                                await sleep(1000 * TRANSITION_TIME);
-                                                // console.log("stopping " + sculptures[j]["title"] + " at " + sculptures[j]["audio"].seek());
-                                                sculptures[j]["startTime"] = sculptures[j]["audio"].seek();
-                                                sculptures[j]["audio"].pause();
-                                                transitioning = false;
-                                                changed = true;});
+                                            shuttleTransition["audio"].fade(MIN_VOLUME, MAX_VOLUME, 1000 * TRANSITION_TIME);
+                                            sculptures[j]["audio"].fade(MAX_VOLUME, MIN_VOLUME, 1000 * TRANSITION_TIME);
+                                            await sleep(1000 * TRANSITION_TIME);
+                                            // console.log("stopping " + sculptures[j]["title"] + " at " + sculptures[j]["audio"].seek());
+                                            sculptures[j]["startTime"] = sculptures[j]["audio"].seek();
+                                            sculptures[j]["audio"].pause();
+                                            transitioning = false;
+                                            changed = true;
                                             sendLoggingData(LOGGING_ID, startPos, 'changed_to_transition_from_' + sculptures[j]["title"], true);
                                             return;
                                         }
@@ -390,17 +394,17 @@
                                                             changed = true;
                                                             // console.log("starting " + sculptures[i]["title"] + " at " + sculptures[i]["startTime"]);
                                                             sculptures[i]["audio"].seek(sculptures[i]["startTime"]);
+                                                            // await sculptures[i]["audio"].once('load', function () {console.log('jobs done'); return;});
                                                             // console.log('actual object seek time: ' + sculptures[i]["audio"].seek());
                                                             sculptures[i]["audio"].play();
-                                                            sculptures[i]["audio"].once('play', async function () {
-                                                                sculptures[i]["audio"].fade(MIN_VOLUME, MAX_VOLUME, 1000 * TRANSITION_TIME);
-                                                                sculptures[j]["audio"].fade(MAX_VOLUME, MIN_VOLUME, 1000 * TRANSITION_TIME);
-                                                                await sleep(1000 * TRANSITION_TIME);
-                                                                // console.log("stopping " + sculptures[j]["title"] + " at " + sculptures[j]["audio"].seek());
-                                                                sculptures[j]["startTime"] = sculptures[j]["audio"].seek();
-                                                                sculptures[j]["audio"].pause();
-                                                                // console.log('LOOK: ' + sculptures[j]["audio"].seek());
-                                                                transitioning = false;});
+                                                            sculptures[i]["audio"].fade(MIN_VOLUME, MAX_VOLUME, 1000 * TRANSITION_TIME);
+                                                            sculptures[j]["audio"].fade(MAX_VOLUME, MIN_VOLUME, 1000 * TRANSITION_TIME);
+                                                            await sleep(1000 * TRANSITION_TIME);
+                                                            // console.log("stopping " + sculptures[j]["title"] + " at " + sculptures[j]["audio"].seek());
+                                                            sculptures[j]["startTime"] = sculptures[j]["audio"].seek();
+                                                            sculptures[j]["audio"].pause();
+                                                            // console.log('LOOK: ' + sculptures[j]["audio"].seek());
+                                                            transitioning = false;
                                                             sendLoggingData(LOGGING_ID, startPos, 'changed_to_' + sculptures[i]["title"] + '_from_' + sculptures[j]["title"], true);
                                                             return;
                                                         }
@@ -429,17 +433,17 @@
                                             transitioning = true;
                                             // console.log("starting " + promenade["title"] + " at " + promenade["startTime"]);
                                             promenade["audio"].seek(promenade["startTime"]);
+                                            // await promenade["audio"].once('load', function () {return;});
                                             promenade["audio"].play();
                                             // console.log('actual object seek time: ' + promenade["audio"].seek());   
-                                            promenade["audio"].once('play', async function () {    
-                                                promenade["audio"].fade(MIN_VOLUME, MAX_VOLUME, 1000 * TRANSITION_TIME);
-                                                sculptures[j]["audio"].fade(MAX_VOLUME, MIN_VOLUME, 1000 * TRANSITION_TIME);
-                                                await sleep(1000 * TRANSITION_TIME);
-                                                // console.log("stopping " + sculptures[j]["title"] + " at " + sculptures[j]["audio"].seek());
-                                                sculptures[j]["startTime"] = sculptures[j]["audio"].seek();
-                                                sculptures[j]["audio"].pause();
-                                                // console.log('LOOK: ' + sculptures[j]["audio"].seek());
-                                                transitioning = false;});
+                                            promenade["audio"].fade(MIN_VOLUME, MAX_VOLUME, 1000 * TRANSITION_TIME);
+                                            sculptures[j]["audio"].fade(MAX_VOLUME, MIN_VOLUME, 1000 * TRANSITION_TIME);
+                                            await sleep(1000 * TRANSITION_TIME);
+                                            // console.log("stopping " + sculptures[j]["title"] + " at " + sculptures[j]["audio"].seek());
+                                            sculptures[j]["startTime"] = sculptures[j]["audio"].seek();
+                                            sculptures[j]["audio"].pause();
+                                            // console.log('LOOK: ' + sculptures[j]["audio"].seek());
+                                            transitioning = false;
                                             sendLoggingData(LOGGING_ID, startPos, 'changed_to_promenade_from_' + sculptures[j]["title"], true);
                                             return;
                                         }

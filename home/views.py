@@ -7,7 +7,10 @@ import bleach
 
 # Create your views here.
 def mainView(request):
-    return HttpResponse(loader.get_template('home/test.html').render(None, request))
+    return HttpResponse(loader.get_template('home/Playing.html').render(None, request))
+
+def landing(request):
+    return HttpResponse(loader.get_template('home/Landing.html').render(None, request))
 
 def getID(request):
     print("pre: " + str(models.Tester.objects.all()))
