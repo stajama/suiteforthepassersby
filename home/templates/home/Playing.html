@@ -71,13 +71,139 @@
 //                xhr.send();
 //            }
 
-            // var last_position = {'lat': null, 'lon': null};
-            // const MAX_DIFF = 3; // Will through out results over this distance (eliminate eradicate data).
 
-            /* These variables are all Howler objects of the desired tracks of
-            music for the entire piece. piece1 should be The Promenade to achieve
-            the desired effect.
-            */
+
+            function calculateDistance(currentPosition, targetPositionLat, targetPositionLon) {
+                const R = 6371e3; // earth's radius (const)
+                var phi1 = currentPosition.latitude * (Math.PI / 180);
+                var phi2 = targetPositionLat * (Math.PI / 180);
+                var deltaphi = (targetPositionLat - currentPosition.latitude) * (Math.PI / 180);
+                var deltalambda = (targetPositionLon - currentPosition.longitude) * (Math.PI / 180);
+
+                var a = Math.sin(deltaphi / 2) * Math.sin(deltaphi / 2) +
+                        Math.cos(phi1) * Math.cos(phi2) *
+                        Math.sin(deltalambda / 2) * Math.sin(deltalambda / 2);
+                var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                var d = R * c;
+                return d;
+            };
+
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            document.getElementById('stop').onclick = function() {
+                if (playing1) {
+                    playing1.pause();
+                    playing1.unload();
+                    playing1 = null;
+                }
+                if (playing2) {
+                    playing2.pause();
+                    playing2.unload();
+                    playing2 = null;
+                }
+            }
+
+            function get_howl(uri) {
+                var x = new Howl({
+                    src: uri,
+                    loop: true,
+                    html5: true,
+		            onload: async function () {return;},
+		            onfade: async function () {return;},
+                });
+                return x;
+            };
+
+            async function changePlaying(uri, startAt) {
+                if (!playing1) {
+                    playing1 = get_howl(uri);
+                    await playing1.onload;
+                    if (startAt) {
+                        try {
+                            playing1._seek(startAt);
+                            console.log('weird _seek() thing');
+                        }
+                        catch(err) {
+                            console.log('normal seek');
+                            playing1.seek(startAt);
+                        }
+                    }
+                    playing1.play();
+                    playing1.fade(MIN_VOLUME, MAX_VOLUME, TRANSITION_TIME);
+                    playing2.fade(MAX_VOLUME, MIN_VOLUME, TRANSITION_TIME);
+                    await playing2.onfade;
+                    var timer;
+                    if (startAt) {
+                        try {
+                            timer = playing2._seek();
+                            console.log('weird _seek() thing');
+                        }
+                        catch(err) {
+                            console.log('normal seek');
+                            timer = playing2.seek();
+                        }
+                    }
+                    playing2.pause();
+                    playing2.unload();
+                    playing2 = null;
+                    if (startAt) {
+                        return timer;
+                    }
+                } else {
+                    playing2 = get_howl(uri);
+                    await playing1.onload;
+                    if (startAt) {
+                        try {
+                            playing2._seek(startAt);
+                            console.log('weird _seek() thing');
+                        }
+                        catch(err) {
+                            console.log('normal seek');
+                            playing2.seek(startAt);
+                        }
+                    }
+                    playing2.play();
+                    playing2.fade(MIN_VOLUME, MAX_VOLUME, TRANSITION_TIME);
+                    playing1.fade(MAX_VOLUME, MIN_VOLUME, TRANSITION_TIME);
+                    await playing1.onfade;
+                    var timer;
+                    if (startAt) {
+                        try {
+                            timer = playing1._seek();
+                            console.log('weird _seek() thing');
+                        }
+                        catch(err) {
+                            console.log('normal seek');
+                            timer = playing1.seek();
+                        }
+                    }
+                    playing1.pause();
+                    playing1.unload();
+                    playing1 = null;
+                    if (startAt) {
+                        return timer;
+                    }
+                }
+            };
+
+            function is_it_playing(uri) {
+                if (playing1) {
+                    try {
+                        return playing1.src.includes(uri);
+                    } catch(err) {
+                        return playing1._src.includes(uri);
+                    }
+                } else {
+                    try {
+                        return playing2.src.includes(uri);
+                    } catch(err) {
+                        return playing2._src.includes(uri);
+                    }
+                }
+            };
+
 
             var standingFigures = {"name": "Standing Figures",
                                    "lat": [39.045812],
@@ -271,151 +397,8 @@
             };
             console.log('time to worry if otherwise blank');
 
-            /* Function for calculating users-position from a sculpture.
-            Math and code explained better at
-            https://www.movable-type.co.uk/scripts/latlong.html
-            */
-            function calculateDistance(currentPosition, targetPositionLat, targetPositionLon) {
-                const R = 6371e3; // earth's radius (const)
-                var phi1 = currentPosition.latitude * (Math.PI / 180);
-                var phi2 = targetPositionLat * (Math.PI / 180);
-                var deltaphi = (targetPositionLat - currentPosition.latitude) * (Math.PI / 180);
-                var deltalambda = (targetPositionLon - currentPosition.longitude) * (Math.PI / 180);
 
-                var a = Math.sin(deltaphi / 2) * Math.sin(deltaphi / 2) +
-                        Math.cos(phi1) * Math.cos(phi2) *
-                        Math.sin(deltalambda / 2) * Math.sin(deltalambda / 2);
-                var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                var d = R * c;
-                return d;
-            };
 
-            function sleep(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
-
-            // IMPORTANT !!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!
-            /* This function is tied to the Emergency Stop button. It simply stops
-            all Howler objects from playing in the off chance that something goes
-            horribly wrong. Any new Howler objects must be added to the this
-            function.
-            */
-            document.getElementById('stop').onclick = function() {
-                for (i = 0; i < sculptures.length; i++) {
-                    sculptures[i]["audio"].pause()
-                }
-            };
-
-            function clean_strings(string) {
-                var output = "";
-                for (var i = 0; i < string.length; i++) {
-                    if (string.charAt(i) == ' ') {
-                        output = output + '_';
-                    } else {
-                        output = output + string.charAt(i);
-                    }
-                }
-                return output;
-            }
-
-            function get_howl(uri) {
-                var x = new Howl({
-                    src: uri,
-                    loop: true,
-                    html5: true,
-		            onload: async function () {return;},
-		            onfade: async function () {return;},
-                });
-                return x;
-            };
-
-	    async function changePlaying(uri, startAt) {
-            if (!playing1) {
-                playing1 = get_howl(uri);
-                await playing1.onload;
-                if (startAt) {
-                    try {
-                        playing1._seek(startAt);
-                        console.log('weird _seek() thing');
-                    }
-                    catch(err) {
-                        console.log('normal seek');
-                        playing1.seek(startAt);
-                    }
-                }
-                playing1.play();
-                playing1.fade(MIN_VOLUME, MAX_VOLUME, TRANSITION_TIME);
-                playing2.fade(MAX_VOLUME, MIN_VOLUME, TRANSITION_TIME);
-                await playing2.onfade;
-                var timer;
-                if (startAt) {
-                    try {
-                        timer = playing2._seek();
-                        console.log('weird _seek() thing');
-                    }
-                    catch(err) {
-                        console.log('normal seek');
-                        timer = playing2.seek();
-                    }
-                }
-                playing2.pause();
-                playing2.unload();
-                playing2 = null;
-                if (startAt) {
-                    return timer;
-                }
-            } else {
-                playing2 = get_howl(uri);
-                await playing1.onload;
-                if (startAt) {
-                    try {
-                        playing2._seek(startAt);
-                        console.log('weird _seek() thing');
-                    }
-                    catch(err) {
-                        console.log('normal seek');
-                        playing2.seek(startAt);
-                    }
-                }
-                playing2.play();
-                playing2.fade(MIN_VOLUME, MAX_VOLUME, TRANSITION_TIME);
-                playing1.fade(MAX_VOLUME, MIN_VOLUME, TRANSITION_TIME);
-                await playing1.onfade;
-                var timer;
-                if (startAt) {
-                    try {
-                        timer = playing1._seek();
-                        console.log('weird _seek() thing');
-                    }
-                    catch(err) {
-                        console.log('normal seek');
-                        timer = playing1.seek();
-                    }
-                }
-                playing1.pause();
-                playing1.unload();
-                playing1 = null;
-                if (startAt) {
-                    return timer;
-                }
-            };
-
-            function is_it_playing(uri) {
-                if (playing1) {
-                    try {
-                        return playing1.src.includes(uri);
-                    } catch(err) {
-                        return playing1._src.includes(uri);
-                    }
-                } else {
-                    try {
-                        return playing2.src.includes(uri);
-                    } catch(err) {
-                        return playing2._src.includes(uri);
-                    }
-                }
-            };
-        };
 
 
         </script>
