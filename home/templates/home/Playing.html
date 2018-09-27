@@ -125,8 +125,11 @@
 
             async function changePlaying(uri, startAt) {
                 if (!playing1) {
+                    console.log('changing playing1');
                     playing1 = get_howl(uri);
+                    console.log('howl set');
                     await playing1.onload;
+                    console.log('loaded');
                     if (startAt) {
                         try {
                             playing1._seek(startAt);
@@ -137,10 +140,13 @@
                             playing1.seek(startAt);
                         }
                     }
+                    console.log('seek set');
                     playing1.play();
+                    console.log('playing now');
                     playing1.fade(MIN_VOLUME, MAX_VOLUME, TRANSITION_TIME);
                     playing2.fade(MAX_VOLUME, MIN_VOLUME, TRANSITION_TIME);
                     await playing2.onfade;
+                    console.log('fade supposed to be done');
                     var timer;
                     if (startAt) {
                         try {
@@ -153,14 +159,18 @@
                         }
                     }
                     playing2.pause();
+                    console.log('stopped now');
                     playing2.unload();
                     playing2 = null;
                     if (startAt) {
                         return timer;
                     }
                 } else {
+                    console.log('changing playing2');
                     playing2 = get_howl(uri);
-                    await playing1.onload;
+                    console.log('howl set');
+                    await playing2.onload;
+                    console.log('loaded');
                     if (startAt) {
                         try {
                             playing2._seek(startAt);
@@ -171,10 +181,13 @@
                             playing2.seek(startAt);
                         }
                     }
+                    console.log('seek set');
                     playing2.play();
+                    console.log('playing now');
                     playing2.fade(MIN_VOLUME, MAX_VOLUME, TRANSITION_TIME);
                     playing1.fade(MAX_VOLUME, MIN_VOLUME, TRANSITION_TIME);
                     await playing1.onfade;
+                    console.log('fade supposed to be done');
                     var timer;
                     if (startAt) {
                         try {
@@ -187,12 +200,12 @@
                         }
                     }
                     playing1.pause();
+                    console.log('stopped now');
                     playing1.unload();
                     playing1 = null;
                     if (startAt) {
                         return timer;
                     }
-                }
                 return;
             };
 
