@@ -10,11 +10,11 @@ def mainView(request):
     return HttpResponse(loader.get_template('home/Playing.html').render(None, request))
 
 def landing(request):
-    return HttpResponse(loader.get_template('home/Landing.html').render(None, request))
+    return HttpResponse(loader.get_template('home/newHowl.html').render(None, request))
 
 def getID(request):
     print("pre: " + str(models.Tester.objects.all()))
-    tester = models.Tester(len(models.Tester.objects.all()))
+    tester = models.Tester()
     tester.save()
     print("post: " + str(models.Tester.objects.all()))
     id_number = tester.id

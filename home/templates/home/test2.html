@@ -1,0 +1,65 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Suite for the Passers By</title>
+        <link rel="shortcut icon" href="{{ STATIC_URL }}ico/favicon.ico">
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js">
+
+    </head>
+
+    <body>
+
+        <h1 id="nextTo">You are not near any sculptures.</h1>
+
+
+        <p id="startLat">x</p>
+        <p id="startLon">y</p>
+        <p id="distance1">1</p>
+        <p id="distance2">2</p>
+        <p id="distance3">3</p>
+        <p id="distance4">4</p>
+        <p id="distance5">5</p>
+        <p id="distance6">6</p>
+        <p id="distance7">7</p>
+        <p id="distance8">8</p>
+        <p id="distance9">9</p>
+        <p id="distance10">10</p>
+        <p id="distance11">11</p>
+        <p id="distance12">12</p>
+        <audio id="currentlyPlaying" src="{% static 'test.mp3' %}"></audio>
+
+
+        <br>
+        <button id="start">PRESS HERE TO START</button>
+        <button id="change">Change</button>
+        <button id="stop">EMERGENCY STOP</button>
+        <br>
+
+        <script>
+            var AudioContext = window.AudioContext || window.webkitAudioContext;
+            var audioCtx = new AudioContext();
+
+            var oscillatorNode = audioCtx.createMediaElementSource(document.getElementById("currentlyPlaying"));
+            var gainNode = audioCtx.createGain();
+            var finish = audioCtx.destination;
+            oscillatorNode.connect(gainNode).connect(finish);
+
+            document.getElementById('start').onclick = function () {
+                document.getElementById('currentlyPlaying').play();
+            }
+
+            document.getElementById('change').onclick =  function () {
+                console.log(document.getElementById('currentlyPlaying').src + " vs. " + "{% static 'test.mp3' %}");
+                if (document.getElementById('currentlyPlaying').src.includes("{% static 'test.mp3' %}")) {
+                    document.getElementById('currentlyPlaying').src = "{% static 'Broken.mp3' %}";
+                    document.getElementById('currentlyPlaying').play();
+                } else {
+                    document.getElementById('currentlyPlaying').src = "{% static 'test.mp3' %}";
+                    document.getElementById('currentlyPlaying').play();
+                }
+            }
+        </script>
+
+    </body>
+</html>

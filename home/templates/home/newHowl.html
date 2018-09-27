@@ -10,6 +10,7 @@
     <button id='2'>2</button>
     <button id='3'>3</button>
     <button id='4'>4</button>
+    <button id='next'>next</button>
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.js"></script>
     <script type="text/javascript">
@@ -18,11 +19,17 @@
         var button3 = document.getElementById('3');
         var button4 = document.getElementById('4');
         var startButton = document.getElementById('start');
+        var nextButton = document.getElementById('next');
+
 
         var testm = new Howl({
             src: ["{% static "test.mp3" %}"],
             loop: true,
-            // html5: true,
+            html5: true,
+            preload: false,
+            onload: function () {console.log('loaded')},
+            onplay: function () {console.log('playing')},
+            onfade: function () {console.log('fade complete')},
         })
 
         var hold = [testm];
@@ -30,26 +37,29 @@
         var music = hold[0];
 
         button1.onclick = function () {
-            music.seek(0);
+            music._seek(0);
         };
 
         button2.onclick = function () {
-            music.seek(60);
+            music._seek(60);
         };
 
         button3.onclick = function () {
-            music.seek(120);
+            music._seek(120);
         };
 
         button4.onclick = function () {
-            music.seek(180);
+            music._seek(180);
         };
 
         startButton.onclick = async function () {
             if (music.playing()) {
                 music.fade(1.0, 0.0, 6000);
                 await sleep(6000);
-                music.pause()
+                music.pause();
+                music.unload();
+                console.log(music
+                    )
                 console.log('stopped')
             } else {
                 music.play();
@@ -61,6 +71,42 @@
 
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        nextButton.onclick = function () {
+            console.log(music);
+            console.log(music._src);
+            if (music._src.includes("{% static "test.mp3" %}")) {
+                testm = new Howl({src: "{% static "Broken.mp3" %}", loop: true, html5: true});
+                testm.once('load', async function () {
+                    console.log('play triggered')
+                    testm.play();
+                    music.fade(1.0, 0.0, 6000);
+                    testm.fade(0.0, 1.0, 6000);
+                    console.log("hello0?")
+                    await sleep(6000);
+                    console.log('fade triggered')
+                    music.unload();
+                    music = testm;
+                    testm = null;
+                });
+            } else {
+                testm = new Howl({src: "{% static "test.mp3" %}", loop: true, html5: true});
+                
+                music.fade(1.0, 0.0, 6000);
+                testm.once('load', async function () {
+                    console.log('play triggered')
+                    testm.play();
+                    music.fade(1.0, 0.0, 6000);
+                    testm.fade(0.0, 1.0, 6000);
+                    testm.once('fade', function() {
+                        console.log('fade triggered')
+                        music.unload();
+                        music = testm;
+                        testm = null;
+                    });
+                });
+            }
         }
     </script>
 </body>
