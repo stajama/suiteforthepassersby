@@ -190,13 +190,13 @@
                     playing2.fade(MIN_VOLUME, MAX_VOLUME, TRANSITION_TIME);
                     playing1.fade(MAX_VOLUME, MIN_VOLUME, TRANSITION_TIME);
                     try {
-                        while (playing1.volume != 0 || playing1.volume != 0.0) {
-                            console.log('fading: ' + playing1.volume);
+                        while (playing1.volume() != 0 || playing1.volume() != 0.0) {
+                            console.log('fading: ' + playing1.volume());
                             await sleep(500);
                         }
                     } catch(err) {
-                        while (playing1._volume != 0 || playing1._volume != 0.0) {
-                            console.log('fading: ' + playing1._volume);
+                        while (playing1._volume() != 0 || playing1._volume() != 0.0) {
+                            console.log('fading: ' + playing1._volume());
                             await sleep(500);
                         }
                     }
