@@ -193,6 +193,7 @@
                         return timer;
                     }
                 }
+                return;
             };
 
             function is_it_playing(uri) {
@@ -354,7 +355,7 @@
                             if (!is_it_playing(shuttleTransition['audio'])) {
                                 console.log('shuttleTransition live')
                                 transitioning = true;
-                                changePlaying(shuttleTransition['audio'], null);
+                                await changePlaying(shuttleTransition['audio'], null);
                                 transitioning = false;
                                 changed = true;
                                 return;
@@ -378,10 +379,10 @@
                                         if (!is_it_playing(sculptures[i]['audio'])) {
                                             changed = true;
                                             transitioning = true;
-                                            changePlaying(sculptures[i]['audio'], null);
+                                            await changePlaying(sculptures[i]['audio'], null);
                                             transitioning = false;
                                             return;
-                                        } else { console.log(scuplture[i]['title'] + ' already playing'); return; }
+                                        } else { console.log(sculptures[i]['title'] + ' already playing'); return; }
                                     }
                                 }
                                 console.log(sculptures[i]['title'] + '-pass');
@@ -395,7 +396,7 @@
                                 document.getElementById('title').innerHTML = promenade['title'];
                                 document.getElementById('sculpture').innerHTML = promenade['name'];
                                 transitioning = true;
-                                changePlaying(promenade['audio'], null);
+                                await changePlaying(promenade['audio'], null);
                                 transitioning = false;
                                 return;
                             } else { console.log('promenade already playing'); return; }
