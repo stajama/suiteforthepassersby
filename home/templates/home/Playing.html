@@ -74,23 +74,23 @@
 
 
             function calculateDistance(currentPosition, targetPositionLat, targetPositionLon) {
-                console.log("in calculateDistance: \ncurrentPosition: " + currentPosition.latitude + ", " + currentPosition.longitude + '\ntargets: ' + targetPositionLat + ', ' + targetPositionLon);
+//                console.log("in calculateDistance: \ncurrentPosition: " + currentPosition.latitude + ", " + currentPosition.longitude + '\ntargets: ' + targetPositionLat + ', ' + targetPositionLon);
                 const R = 6371e3; // earth's radius (const)
                 var phi1 = currentPosition.latitude * (Math.PI / 180);
-                console.log(phi1);
+//                console.log(phi1);
                 var phi2 = targetPositionLat * (Math.PI / 180);
-                console.log(phi2);
+//                console.log(phi2);
                 var deltaphi = (targetPositionLat - currentPosition.latitude) * (Math.PI / 180);
-                console.log(deltaphi);
+//                console.log(deltaphi);
                 var deltalambda = (targetPositionLon - currentPosition.longitude) * (Math.PI / 180);
-                console.log(deltalambda);
+//                console.log(deltalambda);
 
                 var a = Math.sin(deltaphi / 2) * Math.sin(deltaphi / 2) +
                         Math.cos(phi1) * Math.cos(phi2) *
                         Math.sin(deltalambda / 2) * Math.sin(deltalambda / 2);
-                console.log(a);
+//                console.log(a);
                 var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                console.log(c + ', ' + R);
+//                console.log(c + ', ' + R);
                 var d = R * c;
                 return d;
             };
@@ -346,9 +346,9 @@
                     console.log('----------------------------------------------------------------------------------')
                     if (!transitioning) {
                         var changed = false;
-                        console.log('shuttleTrans: distance-' + calculateDistance(startPos, shuttlecockN['lat'][0], shuttlecockN['lon'][0]) + '-' + calculateDistance(startPos, shuttlecockS['lat'][0], shuttlecockS['lon'][0]));
-                        if (calculateDistance(startPos, shuttlecockN['lat'][0], shuttlecockN['lon'][0]) <= shuttlecockN['trigger'][0]
-                            && calculateDistance(startPos, shuttlecockS['lat'][0], shuttlecockS['lon'][0]) <= shuttlecockS['trigger'][0]) {
+                        console.log('shuttleTrans: distance-' + calculateDistance(startPos.coords, shuttlecockN['lat'][0], shuttlecockN['lon'][0]) + '-' + calculateDistance(startPos.coords, shuttlecockS['lat'][0], shuttlecockS['lon'][0]));
+                        if (calculateDistance(startPos.coords, shuttlecockN['lat'][0], shuttlecockN['lon'][0]) <= shuttlecockN['trigger'][0]
+                            && calculateDistance(startPos.coords, shuttlecockS['lat'][0], shuttlecockS['lon'][0]) <= shuttlecockS['trigger'][0]) {
                             document.getElementById('title').innerHTML = shuttleTransition['title'];
                             document.getElementById('sculpture').innerHTML = shuttleTransition['name'];
                             if (!is_it_playing(shuttleTransition['audio'])) {
@@ -370,8 +370,8 @@
                                     continue;
                                 }
                                 for (var j = 0; j < sculptures[i]['lat'].length; j++) {
-                                    console.log('Checking ' + sculptures[i]['lat'][j] + ', ' + sculptures[i]['lon'][j] + ": " + calculateDistance(startPos, sculptures[i]['lat'][j], sculptures[i]['lon'][j]));
-                                    if (calculateDistance(startPos, sculptures[i]['lat'][j], sculptures[i]['lon'][j]) <= sculptures[i]['trigger'][j]) {
+                                    console.log('Checking ' + sculptures[i]['lat'][j] + ', ' + sculptures[i]['lon'][j] + ": " + calculateDistance(startPos.coords, sculptures[i]['lat'][j], sculptures[i]['lon'][j]));
+                                    if (calculateDistance(startPos.coords, sculptures[i]['lat'][j], sculptures[i]['lon'][j]) <= sculptures[i]['trigger'][j]) {
                                         document.getElementById('title').innerHTML = sculptures[i]['title'];
                                         document.getElementById('sculpture').innerHTML = sculptures[i]['name'];
                                         console.log(sculptures[i]['title'] + ' change!');
