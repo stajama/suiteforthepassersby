@@ -38,8 +38,8 @@
             const TRANSITION_TIME = 6; // This variable controls the crossfade time when a piece transition is triggered.
             var transitioning = false;
             var currentlyPlaying = 0;
-	    var playing1 = null;
-	    var playing2 = null;
+	        var playing1 = null;
+	        var playing2 = null;
 
             // LOGGING
             /* Post request tool for logging event 9/28. Code related to the
@@ -189,7 +189,8 @@
 
             document.getElementById('start').onclick = async function() {
                 var startPos;
-                promenade['audio'].play();
+                playing1 = get_howl(promenade['audio']);
+                playing1.play();
                 var button = document.getElementById('start');
                 button.innerHTML = 'PLEASE REFRESH TO RESTART';
                 button.disabled = true;
@@ -420,3 +421,4 @@
         </script>
     </body>
 </html>
+
