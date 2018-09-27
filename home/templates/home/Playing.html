@@ -341,14 +341,18 @@
                         var changed = false;
                         if (calculateDistance(startPos, shuttlecockN['lat'][0], shuttlecockN['lon'][0]) <= shuttlecockN['trigger'][0]
                             && calculateDistance(startPos, shuttlecockS['lat'][0], shuttlecockS['lon'][0]) <= shuttlecockS['trigger'][0]) {
+                            document.getElementById('title').innerHTML = shuttleTransition['title'];
+                            document.getElementById('sculpture').innerHTML = shuttleTransition['name'];
                             if (!is_it_playing(shuttleTransition['audio'])) {
+                                console.log('shuttleTransition live')
                                 transitioning = true;
                                 changePlaying(shuttleTransition['audio'], null);
                                 transitioning = false;
                                 changed = true;
                                 return;
-                            }
+                            } else { 'shuttlecock transition already playing'); return; }
                         }
+                        console.log('shuttleTransition pass, no change');
 
                         if (!changed) {
                             for (var i = 0; i < sculptures.length; i++) {
@@ -357,27 +361,34 @@
                                 }
                                 for (var j = 0; j < sculptures[i]['lat'].length; j++) {
                                     if (calculateDistance(startPos, sculptures[i]['lat'][j], sculptures[i]['lon'][j]) <= sculptures[i]['trigger'][j]) {
+                                        document.getElementById('title').innerHTML = sculptures[i]['title'];
+                                        document.getElementById('sculpture').innerHTML = sculptures[i]['name'];
+                                        console.log(sculptures[i]['title'] + ' change!');
                                         if (!is_it_playing(sculptures[i]['audio'])) {
                                             changed = true;
                                             transitioning = true;
                                             changePlaying(sculptures[i]['audio'], null);
-                                            // sculptures[i]['startTime'] = changePlaying(sculptures[i]['audio'], sculptures[i]['startTime']);
                                             transitioning = false;
                                             return;
-                                        }
+                                        } else { console.log(scuplture[i]['title'] + ' already playing'); return; }
                                     }
                                 }
                             }
                         }
+                        console.log('Regular transition pass, no change');
 
                         if (!changed) {
                             if (!is_it_playing(promenade['audio'])) {
+                                console.log('back to promenade');
+                                document.getElementById('title').innerHTML = promenade['title'];
+                                document.getElementById('sculpture').innerHTML = promenade['name'];
                                 transitioning = true;
                                 changePlaying(promenade['audio'], null);
                                 transitioning = false;
-                            }
+                                return;
+                            } else { console.log('promenade already playing'); return; }
                         }
-                    }
+                    } else { console.log('transition blocked')}
                 };
 
                 var geoError = function(error) {
