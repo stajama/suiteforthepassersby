@@ -189,7 +189,17 @@
                     console.log('playing now');
                     playing2.fade(MIN_VOLUME, MAX_VOLUME, TRANSITION_TIME);
                     playing1.fade(MAX_VOLUME, MIN_VOLUME, TRANSITION_TIME);
-                    await sleep(TRANSITION_TIME);
+                    try {
+                        while (playing1.volume) != 0 || playing1.volume != 0.0) {
+                            console.log('fading');
+                            await sleep(500);
+                        }
+                    } catch(err) {
+                        while (playing1._volume) != 0 || playing1._volume != 0.0) {
+                            console.log('fading');
+                            await sleep(500);
+                        }
+                    }
                     console.log('fade supposed to be done');
                     var timer;
                     if (startAt) {
@@ -446,4 +456,4 @@
     </body>
 </html>
 
-<!-- Merge Rewrite Attempt 1.9 -->
+<!-- Merge Rewrite Attempt 1.15 -->
