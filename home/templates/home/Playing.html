@@ -77,13 +77,18 @@
                 console.log("in calculateDistance: \ncurrentPosition: " + currentPosition.latitude + ", " + currentPosition.longitude + '\ntargets: ' + targetPositionLat + ', ' + targetPositionLon);
                 const R = 6371e3; // earth's radius (const)
                 var phi1 = currentPosition.latitude * (Math.PI / 180);
+                console.log(phi1);
                 var phi2 = targetPositionLat * (Math.PI / 180);
+                console.log(phi2);
                 var deltaphi = (targetPositionLat - currentPosition.latitude) * (Math.PI / 180);
+                console.log(deltaphi);
                 var deltalambda = (targetPositionLon - currentPosition.longitude) * (Math.PI / 180);
+                console.log(deltalambda);
 
                 var a = Math.sin(deltaphi / 2) * Math.sin(deltaphi / 2) +
                         Math.cos(phi1) * Math.cos(phi2) *
                         Math.sin(deltalambda / 2) * Math.sin(deltalambda / 2);
+                console.log(a);
                 var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
                 console.log(c + ', ' + R);
                 var d = R * c;
