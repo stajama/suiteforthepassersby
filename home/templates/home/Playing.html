@@ -74,6 +74,7 @@
 
 
             function calculateDistance(currentPosition, targetPositionLat, targetPositionLon) {
+                console.log("in calculateDistance: \ncurrentPosition: " + currentPosition.latitude + ", " + currentPosition.longitude + '\n targets: ' + targetPositionLat + ', ' + targetPositionLon);
                 const R = 6371e3; // earth's radius (const)
                 var phi1 = currentPosition.latitude * (Math.PI / 180);
                 var phi2 = targetPositionLat * (Math.PI / 180);
