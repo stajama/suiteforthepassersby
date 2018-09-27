@@ -336,9 +336,10 @@
                     */
 
 
-
+                    console.log('----------------------------------------------------------------------------------')
                     if (!transitioning) {
                         var changed = false;
+                        console.log('shuttleTrans: distance-' + calculateDistance(startPos, shuttlecockN['lat'][0], shuttlecockN['lon'][0]) + '-' + calculateDistance(startPos, shuttlecockS['lat'][0], shuttlecockS['lon'][0]));
                         if (calculateDistance(startPos, shuttlecockN['lat'][0], shuttlecockN['lon'][0]) <= shuttlecockN['trigger'][0]
                             && calculateDistance(startPos, shuttlecockS['lat'][0], shuttlecockS['lon'][0]) <= shuttlecockS['trigger'][0]) {
                             document.getElementById('title').innerHTML = shuttleTransition['title'];
@@ -358,9 +359,11 @@
                             for (var i = 0; i < sculptures.length; i++) {
                                 console.log('checking ' + sculptures[i]['title']);
                                 if (sculptures[i]['lat'][0] == 0) {
+                                    console.log('no coords, pass');
                                     continue;
                                 }
                                 for (var j = 0; j < sculptures[i]['lat'].length; j++) {
+                                    console.log('Checking ' + sculptures[i]['lat'][j] + ', ' + sculptures[i]['lon'][j] + ": " + calculateDistance(startPos, sculptures[i]['lat'][j], sculptures[i]['lon'][j]));
                                     if (calculateDistance(startPos, sculptures[i]['lat'][j], sculptures[i]['lon'][j]) <= sculptures[i]['trigger'][j]) {
                                         document.getElementById('title').innerHTML = sculptures[i]['title'];
                                         document.getElementById('sculpture').innerHTML = sculptures[i]['name'];
