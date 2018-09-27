@@ -169,7 +169,7 @@
                     console.log('changing playing2');
                     playing2 = get_howl(uri);
                     console.log('howl set');
-                    while (playing2.status() != 'loaded') {
+                    while (playing2.state() != 'loaded') {
                         console.log('loading');
                         await sleep(500);
                     }
