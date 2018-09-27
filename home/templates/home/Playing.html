@@ -169,7 +169,10 @@
                     console.log('changing playing2');
                     playing2 = get_howl(uri);
                     console.log('howl set');
-                    await playing2.once('load', function () { return true; });
+                    while (playing2.status() != 'loaded') {
+                        console.log('loading');
+                        await sleep(500);
+                    }
                     console.log('loaded');
                     if (startAt) {
                         try {
@@ -186,7 +189,7 @@
                     console.log('playing now');
                     playing2.fade(MIN_VOLUME, MAX_VOLUME, TRANSITION_TIME);
                     playing1.fade(MAX_VOLUME, MIN_VOLUME, TRANSITION_TIME);
-                    await playing1.once('fade', function () { return true; });
+                    await sleep(TRANSITION_TIME);
                     console.log('fade supposed to be done');
                     var timer;
                     if (startAt) {
