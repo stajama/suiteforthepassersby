@@ -25,9 +25,9 @@
 
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.15/howler.js"></script>
         <script type="text/javascript">
-            /* Script uses HTML5 Geolocation to get regular GPS location updates 
+            /* Script uses HTML5 Geolocation to get regular GPS location updates
             from end-user devices. When initialized, piece1 (The Promenade) will
-            play until the user's geolocation is within the specified trigger 
+            play until the user's geolocation is within the specified trigger
             distance of the desired piece. The function geosuccess contains logic
             to transition to the desired piece.
             */
@@ -38,9 +38,11 @@
             const TRANSITION_TIME = 6; // This variable controls the crossfade time when a piece transition is triggered.
             var transitioning = false;
             var currentlyPlaying = 0;
-            
+	    var playing1 = null;
+	    var playing2 = null;
+
             // LOGGING
-            /* Post request tool for logging event 9/28. Code related to the 
+            /* Post request tool for logging event 9/28. Code related to the
             event will be proceeded by the commented "LOGGING" line.
             */
             var LOGGING_ID;
@@ -72,8 +74,8 @@
             // var last_position = {'lat': null, 'lon': null};
             // const MAX_DIFF = 3; // Will through out results over this distance (eliminate eradicate data).
 
-            /* These variables are all Howler objects of the desired tracks of 
-            music for the entire piece. piece1 should be The Promenade to achieve 
+            /* These variables are all Howler objects of the desired tracks of
+            music for the entire piece. piece1 should be The Promenade to achieve
             the desired effect.
             */
 
@@ -135,7 +137,7 @@
             var promenade = {"name": "Promenade",
                                       "title": "Promenade",
                                       "startTime": 0,
-                                      "audio": get_howl("{% static "Promenade.mp3" %}"), 
+                                      "audio": "{% static "Promenade.mp3" %}",
                                       "lat": [0],
                                       "lon": [0]};
 
@@ -180,11 +182,11 @@
             }
             // console.log('2')
 
-            /* Main FUnction. Must either start window.onload (should be 
-            possible thanks to Howler override of DOM exceptions) or through 
+            /* Main FUnction. Must either start window.onload (should be
+            possible thanks to Howler override of DOM exceptions) or through
             a button.onclick or similar user-initiated event.
             */
-            
+
             document.getElementById('start').onclick = async function() {
                 var startPos;
                 promenade['audio'].play();
@@ -200,147 +202,55 @@
                 var geoSuccess = async function(position) {
                     startPos = position;
 
-                    // IMPORTANT !!!!!! IMPORTANT 
-                    /* Any additional tracks/pieces must have their 
-                    respective dictionary added to this array. This 
+                    // IMPORTANT !!!!!! IMPORTANT
+                    /* Any additional tracks/pieces must have their
+                    respective dictionary added to this array. This
                     excludes The Promenade and the Shuttlecock Transition music.
                     */
-                    
+
 
 
                     if (!transitioning) {
                         var changed = false;
-                        // if in range of both Shuttlecocks: play transition music
-                        if (calculateDistance(startPos.coords, shuttlecockN["lat"], shuttlecockN["lon"]) <= shuttlecockN["trigger"] && 
-                            calculateDistance(startPos.coords, shuttlecockS["lat"], shuttlecockS["lon"]) <= shuttlecockS["trigger"]) {
-                            document.getElementById('title').innerHTML = "Both light and shadow";
-                            document.getElementById('sculpture').innerHTML = "between the Shuttlecocks";
-                            if (typeof shuttleTransition["audio"] == 'string') {
-                                shuttleTransition['audio'] = get_howl(shuttleTransition['audio']);
-                            }
-                            if (!shuttleTransition["audio"].playing() ) {
-                                for (var j = 0; j < sculptures.length; j++) {
-                                    if (typeof sculpture[j]['audio'] == 'string') {
-                                        continue;
-                                    } else if (sculptures[j]["audio"].playing()) {
-                                        transitioning = true;
-                                        // console.log("starting " + shuttleTransition["title"] + " at " + shuttleTransition["startTime"]);
-                                        shuttleTransition["audio"].seek(shuttleTransition["startTime"]);
-                                        // await sculptures[i]["audio"].once('load', function () {return;});
-                                        shuttleTransition["audio"].play();
-                                        // console.log('actual object seek time: ' + shuttleTransition["audio"].seek());
-                                        shuttleTransition["audio"].fade(MIN_VOLUME, MAX_VOLUME, 1000 * TRANSITION_TIME);
-                                        sculptures[j]["audio"].fade(MAX_VOLUME, MIN_VOLUME, 1000 * TRANSITION_TIME);
-                                        await sleep(1000 * TRANSITION_TIME);
-                                        // console.log("stopping " + sculptures[j]["title"] + " at " + sculptures[j]["audio"].seek());
-                                        sculptures[j]["startTime"] = sculptures[j]["audio"].seek();
-                                        sculptures[j]["audio"].pause();
-                                        transitioning = false;
-                                        changed = true;
-                                        sendLoggingData(LOGGING_ID, startPos, 'changed_to_transition_from_' + sculptures[j]["title"], true);
-                                        return;
-                                    }
-                                }
-                            } else {
+                        if (calculateDistance(startPos, shuttlecockN['lat'][0], shuttlecockN['lon'][0]) <= shuttlecockN['trigger'][0]
+                            && calculateDistance(startPos, shuttlecockS['lat'][0], shuttlecockS['lon'][0]) <= shuttlecockS['trigger'][0]) {
+                            if (!is_it_playing(shuttleTransition['audio'])) {
+                                transitioning = true;
+                                changePlaying(shuttleTransition['audio'], null);
+                                transitioning = false;
                                 changed = true;
-                                sendLoggingData(LOGGING_ID, startPos, 'transition_already_playing', true);
+                                return;
                             }
                         }
 
-                        // console.log("transition tested");
-                        /* if NOT changing to transition music, iterate through each 
-                        sculpture. If the user is in range of a new sculpture, change 
-                        to that respective piece/track.
-                        */
                         if (!changed) {
                             for (var i = 0; i < sculptures.length; i++) {
-                                if (sculptures[i]["lat"][0] == 0 && sculptures[i]["lon"][0] == 0)  {
+                                if (sculptures[i]['lat'][0] == 0) {
                                     continue;
-                                } else {
-                                    for (var posr = 0; posr < sculptures[i]['lat'].length; posr++) {
-                                        if (calculateDistance(startPos.coords, sculptures[i]["lat"][posr], sculptures[i]["lon"][posr]) <= sculptures[i]["trigger"][posr]) {
-                                            document.getElementById('title').innerHTML = sculptures[i]['title'];
-                                            document.getElementById('sculpture').innerHTML = sculptures[i]['name'];
-                                            if (typeof sculptures[i]['audio'] == 'string') {
-                                                sculptures[i]['audio'] = get_howl(sculptures[i]['audio']);
-                                            }
-                                            if (!sculptures[i]["audio"].playing()) {
-                                                for (var j = 0; j < sculptures.length; j++) {
-                                                    console.log(sculptures[j]['audio']);
-                                                    if (typeof sculptures[j]['audio'] == 'string') {
-                                                        continue;
-                                                    } else if (sculptures[j]["audio"].playing()) {
-                                                        transitioning = true;
-                                                        changed = true;
-                                                        // console.log("starting " + sculptures[i]["title"] + " at " + sculptures[i]["startTime"]);
-                                                        sculptures[i]["audio"].seek(sculptures[i]["startTime"]);
-                                                        // await sculptures[i]["audio"].once('load', function () {console.log('jobs done'); return;});
-                                                        // console.log('actual object seek time: ' + sculptures[i]["audio"].seek());
-                                                        sculptures[i]['audio'].once('load', async function () {
-                                                            console.log("play started");
-                                                            sculptures[i]['audio'].play();
-                                                            sculptures[i]["audio"].fade(MIN_VOLUME, MAX_VOLUME, 1000 * TRANSITION_TIME);
-                                                            sculptures[j]["audio"].fade(MAX_VOLUME, MIN_VOLUME, 1000 * TRANSITION_TIME);
-                                                            await sleep(1000 * TRANSITION_TIME);
-                                                            // console.log("stopping " + sculptures[j]["title"] + " at " + sculptures[j]["audio"].seek());
-                                                            sculptures[j]["startTime"] = sculptures[j]["audio"].seek();
-                                                            sculptures[j]["audio"].pause();
-                                                            // console.log('LOOK: ' + sculptures[j]["audio"].seek());
-                                                            transitioning = false;});
-                                                        sendLoggingData(LOGGING_ID, startPos, 'changed_to_' + sculptures[i]["title"] + '_from_' + sculptures[j]["title"], true);
-                                                        return;
-                                                    }
-                                                }
-                                            } else {
-                                                changed = true;
-                                                sendLoggingData(LOGGING_ID, startPos, sculptures[i]['title'] + '_already_playing', true);
-                                                return;
-                                            }
+                                }
+                                for (var j = 0; j < sculptures[i]['lat'].length; j++) {
+                                    if (calculateDistance(startPos, sculptures[i]['lat'][j], sculptures[i]['lon'][j]) <= sculptures[i]['trigger'][j]) {
+                                        if (!is_it_playing(sculptures[i]['audio'])) {
+                                            changed = true;
+                                            transitioning = true;
+                                            changePlaying(sculptures[i]['audio'], null);
+                                            // sculptures[i]['startTime'] = changePlaying(sculptures[i]['audio'], sculptures[i]['startTime']);
+                                            transitioning = false;
+                                            return;
                                         }
                                     }
-
                                 }
                             }
                         }
-                        // console.log("allMusic tested");
 
-                        /* if NOT changing to transition music AND NOT changing 
-                        to another piece, play The Promenade music.
-                        */
                         if (!changed) {
-                            document.getElementById('title').innerHTML = "Promenade";
-                            document.getElementById('sculpture').innerHTML = "";
-                            if (!promenade["audio"].playing()) {
-                                for (var j = 0; j < sculptures.length; j++) {
-                                    if (typeof sculptures[j]['audio'] == 'string') {
-                                        continue;
-                                    } else if (sculptures[j]["audio"].playing()) {
-                                        transitioning = true;
-                                        // console.log("starting " + promenade["title"] + " at " + promenade["startTime"]);
-                                        promenade["audio"].seek(promenade["startTime"]);
-                                        // await promenade["audio"].once('load', function () {return;});
-                                        promenade["audio"].play();
-                                        // console.log('actual object seek time: ' + promenade["audio"].seek());  
-                                        promenade['audio'].once('play', async function () { 
-                                            promenade["audio"].fade(MIN_VOLUME, MAX_VOLUME, 1000 * TRANSITION_TIME);
-                                            sculptures[j]["audio"].fade(MAX_VOLUME, MIN_VOLUME, 1000 * TRANSITION_TIME);
-                                            await sleep(1000 * TRANSITION_TIME);
-                                            // console.log("stopping " + sculptures[j]["title"] + " at " + sculptures[j]["audio"].seek());
-                                            sculptures[j]["startTime"] = sculptures[j]["audio"].seek();
-                                            sculptures[j]["audio"].pause();
-                                            // console.log('LOOK: ' + sculptures[j]["audio"].seek());
-                                            transitioning = false;
-                                        });
-                                        sendLoggingData(LOGGING_ID, startPos, 'changed_to_promenade_from_' + sculptures[j]["title"], true);
-                                        return;
-                                    }
-                                }
-                            } else {sendLoggingData(LOGGING_ID, startPos, 'promenade_already_playing', true);}
-                        };
-                    } else {
-                        // console.log("transition being blocked");
-                        sendLoggingData(LOGGING_ID, startPos, 'transition_being_blocked', true);
-                    };
+                            if (!is_it_playing(promenade['audio'])) {
+                                transitioning = true;
+                                changePlaying(promenade['audio'], null);
+                                transitioning = false;
+                            }
+                        }
+                    }
                 };
 
                 var geoError = function(error) {
@@ -360,8 +270,8 @@
             };
             console.log('time to worry if otherwise blank');
 
-            /* Function for calculating users-position from a sculpture. 
-            Math and code explained better at 
+            /* Function for calculating users-position from a sculpture.
+            Math and code explained better at
             https://www.movable-type.co.uk/scripts/latlong.html
             */
             function calculateDistance(currentPosition, targetPositionLat, targetPositionLon) {
@@ -384,9 +294,9 @@
             }
 
             // IMPORTANT !!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!
-            /* This function is tied to the Emergency Stop button. It simply stops 
-            all Howler objects from playing in the off chance that something goes 
-            horribly wrong. Any new Howler objects must be added to the this 
+            /* This function is tied to the Emergency Stop button. It simply stops
+            all Howler objects from playing in the off chance that something goes
+            horribly wrong. Any new Howler objects must be added to the this
             function.
             */
             document.getElementById('stop').onclick = function() {
@@ -412,11 +322,101 @@
                     src: uri,
                     loop: true,
                     html5: true,
+		            onload: async function () {return;},
+		            onfade: async function () {return;},
                 });
                 return x;
-            }
-            
+            };
+
+	    async function changePlaying(uri, startAt) {
+            if (!playing1) {
+                playing1 = get_howl(uri);
+                await playing1.onload;
+                if (startAt) {
+                    try {
+                        playing1._seek(startAt);
+                        console.log('weird _seek() thing');
+                    }
+                    catch(err) {
+                        console.log('normal seek');
+                        playing1.seek(startAt);
+                    }
+                }
+                playing1.play();
+                playing1.fade(MIN_VOLUME, MAX_VOLUME, TRANSITION_TIME);
+                playing2.fade(MAX_VOLUME, MIN_VOLUME, TRANSITION_TIME);
+                await playing2.onfade;
+                var timer;
+                if (startAt) {
+                    try {
+                        timer = playing2._seek();
+                        console.log('weird _seek() thing');
+                    }
+                    catch(err) {
+                        console.log('normal seek');
+                        timer = playing2.seek();
+                    }
+                }
+                playing2.pause();
+                playing2.unload();
+                playing2 = null;
+                if (startAt) {
+                    return timer;
+                }
+            } else {
+                playing2 = get_howl(uri);
+                await playing1.onload;
+                if (startAt) {
+                    try {
+                        playing2._seek(startAt);
+                        console.log('weird _seek() thing');
+                    }
+                    catch(err) {
+                        console.log('normal seek');
+                        playing2.seek(startAt);
+                    }
+                }
+                playing2.play();
+                playing2.fade(MIN_VOLUME, MAX_VOLUME, TRANSITION_TIME);
+                playing1.fade(MAX_VOLUME, MIN_VOLUME, TRANSITION_TIME);
+                await playing1.onfade;
+                var timer;
+                if (startAt) {
+                    try {
+                        timer = playing1._seek();
+                        console.log('weird _seek() thing');
+                    }
+                    catch(err) {
+                        console.log('normal seek');
+                        timer = playing1.seek();
+                    }
+                }
+                playing1.pause();
+                playing1.unload();
+                playing1 = null;
+                if (startAt) {
+                    return timer;
+                }
+            };
+
+            function is_it_playing(uri) {
+                if (playing1) {
+                    try {
+                        return playing1.src.includes(uri);
+                    } catch(err) {
+                        return playing1._src.includes(uri);
+                    }
+                } else {
+                    try {
+                        return playing2.src.includes(uri);
+                    } catch(err) {
+                        return playing2._src.includes(uri);
+                    }
+                }
+            };
+        };
+
+
         </script>
     </body>
 </html>
-
