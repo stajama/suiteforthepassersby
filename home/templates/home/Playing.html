@@ -46,30 +46,30 @@
             event will be proceeded by the commented "LOGGING" line.
             */
             var LOGGING_ID;
-            var xhr = new XMLHttpRequest();
-            // xhr.open('GET', "https://www.suiteforthepassersby.com/logging", true);
-            xhr.open('GET', "http://127.0.0.1/logging", true);
-            xhr.send();
-            xhr.onreadystatechange = processRequest;
-            async function processRequest(e) {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    var response = JSON.parse(xhr.responseText);
-                    LOGGING_ID = response.id;
-                    console.log('id set: ' + LOGGING_ID);
-                }
-            };
+//            var xhr = new XMLHttpRequest();
+//            // xhr.open('GET', "https://www.suiteforthepassersby.com/logging", true);
+//            xhr.open('GET', "http://127.0.0.1/logging", true);
+//            xhr.send();
+//            xhr.onreadystatechange = processRequest;
+//            async function processRequest(e) {
+//                if (xhr.readyState == 4 && xhr.status == 200) {
+//                    var response = JSON.parse(xhr.responseText);
+//                    LOGGING_ID = response.id;
+//                    console.log('id set: ' + LOGGING_ID);
+//                }
+//            };
 
             // LOGGING
             /* Function for sending log data post. Structure:
             LOGGING_ID, geoLat, getLong, active text, */
-            async function sendLoggingData(LOGGING_ID, startPos, action) {
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', "https://www.suiteforthepassersby.com/logging/" + LOGGING_ID + '/' + startPos.coords.latitude + '/' + startPos.coords.longitude + '/' + action, true);
-                var sent = "http://127.0.0.1:8000/logging/" + LOGGING_ID + '/' + startPos.coords.latitude + '/' + startPos.coords.longitude + '/' + clean_strings(action);
-                console.log(sent);
-                xhr.open('GET', sent, true);
-                xhr.send();
-            }
+//            async function sendLoggingData(LOGGING_ID, startPos, action) {
+//                var xhr = new XMLHttpRequest();
+//                xhr.open('GET', "https://www.suiteforthepassersby.com/logging/" + LOGGING_ID + '/' + startPos.coords.latitude + '/' + startPos.coords.longitude + '/' + action, true);
+//                var sent = "http://127.0.0.1:8000/logging/" + LOGGING_ID + '/' + startPos.coords.latitude + '/' + startPos.coords.longitude + '/' + clean_strings(action);
+//                console.log(sent);
+//                xhr.open('GET', sent, true);
+//                xhr.send();
+//            }
 
             // var last_position = {'lat': null, 'lon': null};
             // const MAX_DIFF = 3; // Will through out results over this distance (eliminate eradicate data).
