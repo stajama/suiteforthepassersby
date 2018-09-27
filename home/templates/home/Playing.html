@@ -74,7 +74,7 @@
 
 
             function calculateDistance(currentPosition, targetPositionLat, targetPositionLon) {
-                console.log("in calculateDistance: \ncurrentPosition: " + currentPosition.latitude + ", " + currentPosition.longitude + '\n targets: ' + targetPositionLat + ', ' + targetPositionLon);
+                console.log("in calculateDistance: \ncurrentPosition: " + currentPosition.latitude + ", " + currentPosition.longitude + '\ntargets: ' + targetPositionLat + ', ' + targetPositionLon);
                 const R = 6371e3; // earth's radius (const)
                 var phi1 = currentPosition.latitude * (Math.PI / 180);
                 var phi2 = targetPositionLat * (Math.PI / 180);
@@ -85,6 +85,7 @@
                         Math.cos(phi1) * Math.cos(phi2) *
                         Math.sin(deltalambda / 2) * Math.sin(deltalambda / 2);
                 var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                console.log(c + ', ' + R);
                 var d = R * c;
                 return d;
             };
@@ -422,3 +423,4 @@
     </body>
 </html>
 
+<!-- Merge Rewrite Attempt 1.9 -->
