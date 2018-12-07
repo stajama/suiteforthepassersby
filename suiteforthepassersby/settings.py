@@ -31,7 +31,6 @@ if os.environ.get('location') != 'heroku98sdfeQ109099(3':
     DEBUG = True
 else:
     ALLOWED_HOSTS = ['quiet-hamlet-75383.herokuapp.com', 'www.suiteforthepassersby.com']
-    SECURE_SSL_REDIRECT = True
     DEBUG = True
 
 
