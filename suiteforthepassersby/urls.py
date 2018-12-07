@@ -24,7 +24,7 @@ import home.views
 urlpatterns = [
     re_path(r'logging/*', include('home.urls')),
     url(r'^favicon.ico/$', lambda x: HttpResponseRedirect(settings.STATIC_URL + 'ico/favicon.ico')), # google chrome favicon fix
-    re_path(r'main+?', home.views.mainView),
+#     re_path(r'main+?', home.views.mainView),
     re_path('', home.views.landing),
     path('admin/', admin.site.urls),
 ]
